@@ -48,9 +48,9 @@ body {
 /* Bovenste afbeelding i.p.v. tekst */
 .sponsorLogoTop {
   width: 100%;
-  aspect-ratio: 1.4 / 1;
-  object-fit: contain;
-  transform: scale(1.1);  /* 10% groter */
+  height: auto;
+  display: block;
+  border-radius: 12px;
 }
 
 /* 'Laatste update: 10:42' onder de afbeelding */
@@ -270,4 +270,5 @@ body {
   .slideshow { left: 0; }
   .footerOverlay { left: 0; }
 }
+
 
