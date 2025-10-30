@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="Cache-Control" content="no-store" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Veteranencup Live Foto's</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <!-- Sponsor sidebar -->
+  <aside id="sponsorSidebar" class="sponsorSidebar">
+    <!-- Bovenaan: afbeelding i.p.v. tekst -->
+    <img src="26.jpg" alt="sponsors" class="sponsorLogoTop" />
+    <!-- Onder de afbeelding: enkel 'Laatste update: hh:mm' -->
+    <div class="lastRefreshUnder" id="lastRefresh">Laatste update: --:--</div>
+
+    <div id="sponsorCol" class="sponsorCol"></div>
+  </aside>
+
+  <!-- Slideshow area (JS plaatst hier de crossfade-lagen) -->
+  <div class="slideshow"></div>
+
+  <!-- Footer overlay (groter gemaakt; aanpassen via CSS-variabelen) -->
+  <div class="footerOverlay">
+    <div class="sponsorLine">
+      INTERNATIONAL FOOTBALL HAPPENING 2026 - KROM & STIJF MILLEN - FOOTBALL, BEER AND FRIENDS
+    </div>
+  </div>
+
+  <!-- Placeholder als er (tijdelijk) geen foto's zijn -->
+  <div class="noPhotosMsg" id="noPhotosMsg">
+    Momenteel geen foto's om te tonen.<br />
+    (Kom straks terug 😉)
+  </div>
+
+  <script src="slideshow.js"></script>
+</body>
+</html>
