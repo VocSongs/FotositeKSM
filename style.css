@@ -46,11 +46,13 @@ body {
 }
 
 /* Bovenste afbeelding i.p.v. tekst */
-.sponsorLogoTop{
+.sponsorLogoTop {
   width: 100%;
-  height: auto;
+  aspect-ratio: 1.4 / 1;     /* zelfde verhouding als sponsorlogo’s */
+  object-fit: contain;       /* schaal zonder te vervormen */
+  background: transparent;
+  border-radius: 12px;       /* afgeronde hoeken */
   display: block;
-  border-radius: 12px;
 }
 
 /* 'Laatste update: 10:42' onder de afbeelding */
