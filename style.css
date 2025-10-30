@@ -6,7 +6,7 @@
   --sponsor-pad: 16px;
 
   /* Footer makkelijk aanpassen */
-  --footer-font-size: 1.rem;   /* ← groter/kleiner maken */
+  --footer-font-size: 1.rem;   /* â† groter/kleiner maken */
   --footer-pad-y: 0.7rem;       /* verticale padding */
   --footer-pad-x: 1.2rem;       /* horizontale padding */
 
@@ -48,11 +48,9 @@ body {
 /* Bovenste afbeelding i.p.v. tekst */
 .sponsorLogoTop {
   width: 100%;
-  aspect-ratio: 1.4 / 1;     /* zelfde verhouding als sponsorlogo�s */
-  object-fit: contain;       /* schaal zonder te vervormen */
-  background: transparent;
-  border-radius: 12px;       /* afgeronde hoeken */
-  display: block;
+  aspect-ratio: 1.4 / 1;
+  object-fit: contain;
+  transform: scale(1.1);  /* 10% groter */
 }
 
 /* 'Laatste update: 10:42' onder de afbeelding */
@@ -67,12 +65,12 @@ body {
   background: rgba(0, 0, 0, 0.45);
   padding: 6px 10px;
   border-radius: 10px;
-  white-space: nowrap;           /* alles op één regel */
+  white-space: nowrap;           /* alles op Ã©Ã©n regel */
   z-index: 15;
   box-shadow: 0 4px 10px rgba(0,0,0,0.4);
 }
 
-/* Kolom met logo’s */
+/* Kolom met logoâ€™s */
 .sponsorCol{
   display: flex;
   flex-direction: column;
@@ -82,7 +80,7 @@ body {
   border-right: 0px solid transparent;
 }
 
-/* Eén logo-tegel — verhouding 1.4 : 1 (géén kader/achtergrond meer) */
+/* EÃ©n logo-tegel â€” verhouding 1.4 : 1 (gÃ©Ã©n kader/achtergrond meer) */
 .sponsorItem{
   width: 100%;
   aspect-ratio: 1.4 / 1;
@@ -101,13 +99,13 @@ body {
   max-height: 100%;
   object-fit: contain;
   opacity: 1;
-  border-radius: 12px;   /* ← deze toevoegen */
+  border-radius: 12px;   /* â† deze toevoegen */
   box-shadow: 0 6px 14px rgba(0,0,0,0.4); /* optioneel voor wat diepte */
 }
 
 /* Sponsor animaties -------------------------------------------------------- */
 
-/* 1) slide-up bij één stap rotatie */
+/* 1) slide-up bij Ã©Ã©n stap rotatie */
 .sponsorCol.slideOnce .sponsorItem{
   animation: sponsorSlideUp .45s ease both;
 }
@@ -219,7 +217,7 @@ body {
   100% { transform: scale(1.18) translate(-1%, 0%);  }
 }
 
-/* Footer overlay — groter gemaakt en makkelijk aanpasbaar via variabelen */
+/* Footer overlay â€” groter gemaakt en makkelijk aanpasbaar via variabelen */
 .footerOverlay {
   position: fixed;
   bottom: 1rem;
@@ -272,3 +270,4 @@ body {
   .slideshow { left: 0; }
   .footerOverlay { left: 0; }
 }
+
