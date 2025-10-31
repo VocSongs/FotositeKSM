@@ -385,3 +385,26 @@ body {
     -webkit-transform: translateZ(0);
   }
 }
+/* ===== Herstel afgeronde hoeken voor logo & sponsors ===== */
+@media (min-width: 901px) {
+
+  /* Bovenste logo */
+  .sponsorLogoTop,
+  .sponsorLogoTop img {
+    border-radius: 12px !important;
+    overflow: hidden;
+  }
+
+  /* Elke sponsor-tegel + afbeelding */
+  .sponsorItem,
+  .sponsorItem img {
+    border-radius: 12px !important;
+    overflow: hidden;
+  }
+
+  /* Eventuele schaduw terug subtiel maken (optioneel) */
+  .sponsorItem img,
+  .sponsorLogoTop img {
+    box-shadow: 0 4px 12px rgba(0,0,0,0.35);
+  }
+}
