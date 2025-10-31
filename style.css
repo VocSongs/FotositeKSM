@@ -408,3 +408,28 @@ body {
     box-shadow: 0 4px 12px rgba(0,0,0,0.35);
   }
 }
+/* === FORCEER RONDE HOEKEN (desktop) === */
+@media (min-width: 901px){
+  /* Containers krijgen de hoeken + clippen de inhoud */
+  .sponsorLogoTop,
+  .sponsorItem{
+    border-radius: 12px !important;
+    overflow: hidden !important;
+    box-shadow: 0 8px 22px rgba(0,0,0,.35);   /* optioneel: kaartje-effect */
+    background: transparent;
+    /* WebKit fix om overflow: hidden te forceren bij GPU-layers */
+    -webkit-mask-image: -webkit-radial-gradient(white, black);
+  }
+
+  /* Afbeeldingen volgen de hoeken van de container */
+  .sponsorLogoTop > img,
+  .sponsorItem > img{
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    display: block;
+    border-radius: inherit !important;  /* neem 12px over */
+    box-shadow: none !important;        /* schaduw staat op container */
+    background: transparent;
+  }
+}
