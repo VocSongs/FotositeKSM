@@ -199,7 +199,7 @@ body {
 
 /* Tweakbaar: pas de fade-breedte aan (px) */
 :root{
-  --fade-edge: 22px; /* bv. 20–30px */
+  --fade-edge: 25px; /* bv. 20–30px */
 }
 
 /* Desktop: verticale fade boven & onder op de kolom met sponsors */
