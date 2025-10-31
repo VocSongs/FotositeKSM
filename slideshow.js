@@ -234,7 +234,7 @@ async function refreshFromDrive(){
 
   const now=new Date();
   if (lastRefreshEl) {
-    lastRefreshEl.textContent="Laatste update: "+
+    lastRefreshEl.textContent="Last update: "+
       now.toLocaleTimeString("nl-BE",{hour:"2-digit",minute:"2-digit"});
   }
   crossfadeToCurrent();
