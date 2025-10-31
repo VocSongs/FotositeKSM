@@ -341,3 +341,47 @@ body {
     display: none !important;
   }
 }
+/* ===== DESKTOP: uniforme maten voor bovenlogo en sponsor-tiles ===== */
+@media (min-width: 901px) {
+  /* Bereken 1 keer de binnenbreedte & vaste hoogte van een sponsor-tegel */
+  .sponsorSidebar{
+    /* binnenbreedte = sidebar minus padding links+rechts */
+    --slot-w: calc(var(--sidebar-w) - (2 * var(--sponsor-pad)));
+    /* hoogte = breedte / 1.4  (zelfde verhouding als je tiles) */
+    --slot-h: calc(var(--slot-w) / 1.4);
+  }
+
+  /* Bovenste logo exact even groot als de sponsor-tiles */
+  .sponsorLogoTop{
+    width: var(--slot-w);
+    height: var(--slot-h);
+    display: block;              /* voorkomt inline-gap */
+    margin: 0 auto;              /* centreer binnen de sidebar */
+    object-fit: contain;         /* nooit uitsnijden */
+    border-radius: 12px;
+    box-shadow: none;            /* optioneel: consistent met tiles */
+    image-rendering: auto;
+    -webkit-transform: translateZ(0); /* kleine anti-aliasing fix */
+  }
+
+  /* Iedere sponsor-tegel krijgt exact dezelfde box-maten */
+  .sponsorItem{
+    width: var(--slot-w) !important;
+    height: var(--slot-h) !important;
+    margin: 0 auto;              /* centreer */
+    border-radius: 12px;
+    background: transparent;
+    box-shadow: none;
+  }
+
+  /* Afbeelding vult de box, zonder vervormen */
+  .sponsorItem img{
+    width: 100%;
+    height: 100%;
+    display: block;              /* geen baseline-gap */
+    object-fit: contain;
+    border-radius: 12px;
+    image-rendering: auto;
+    -webkit-transform: translateZ(0);
+  }
+}
