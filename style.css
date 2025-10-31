@@ -1,292 +1,46 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="Cache-Control" content="no-store" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Veteranencup Live Foto's</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
 
-:root{
-  /* Breedte sponsor kolom en spacing */
-  --sidebar-w: 15vw;
-  --sponsor-gap: 14px;
-  --sponsor-pad: 16px;
+  <!-- LOADER: verschijnt tot de eerste foto is geladen -->
+  <div id="loader">
+    <img src="logoKSM.gif" alt="Krom & Stijf Millen" />
+    <div class="loaderText">Even laden…</div>
+  </div>
 
-  /* Footer makkelijk aanpassen */
-  --footer-font-size: 1.rem;   /* â† groter/kleiner maken */
-  --footer-pad-y: 0.7rem;       /* verticale padding */
-  --footer-pad-x: 1.2rem;       /* horizontale padding */
+  <!-- Sponsor sidebar -->
+  <aside id="sponsorSidebar" class="sponsorSidebar">
+    <!-- Bovenaan: afbeelding i.p.v. tekst -->
+    <img src="26.jpg" alt="sponsors" class="sponsorLogoTop" />
+    <!-- Onder de afbeelding: enkel 'Laatste update: hh:mm' -->
+    <div class="lastRefreshUnder" id="lastRefresh">Laatste update: --:--</div>
 
-  /* Sponsor smooth scroll */
-  --sponsor-scroll-duration: 90s; /* snelheid vloeiende scroll */
-}
+    <div id="sponsorCol" class="sponsorCol"></div>
+  </aside>
 
-/* Basispagina fullscreen zwart */
-body {
-  margin: 0;
-  background: #000;
-  color: #fff;
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
-    Roboto, "Helvetica Neue", Arial, sans-serif;
-  overflow: hidden;
-  height: 100vh;
-  width: 100vw;
-  position: relative;
-}
+  <!-- Slideshow area (JS plaatst hier de crossfade-lagen) -->
+  <div class="slideshow"></div>
 
-/* Sponsor sidebar links */
-.sponsorSidebar{
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: var(--sidebar-w);
-  height: 100vh;
-  box-sizing: border-box;
-  padding: var(--sponsor-pad);
-  background: rgba(0,0,0,0.15);
-  backdrop-filter: blur(2px);
+  <!-- Footer overlay (groter gemaakt; aanpassen via CSS-variabelen) -->
+  <div class="footerOverlay">
+    <div class="sponsorLine">
+      INTERNATIONAL FOOTBALL HAPPENING 2026 - KROM & STIJF MILLEN - FOOTBALL, BEER AND FRIENDS
+    </div>
+  </div>
 
-  /* 🔴🟡🔴 Fijne driedubbele lijn aan de rechterkant */
-  border-right: none;
-  background-image: linear-gradient(
-    to right,
-    transparent calc(100% - 9px),
-    #c00000 calc(100% - 9px),
-    #c00000 calc(100% - 6px),
-    #ffd700 calc(100% - 6px),
-    #ffd700 calc(100% - 3px),
-    #c00000 calc(100% - 3px),
-    #c00000 100%
-  );
-  background-repeat: no-repeat;
-  background-size: 100% 100%;
+  <!-- Placeholder als er (tijdelijk) geen foto's zijn -->
+  <div class="noPhotosMsg" id="noPhotosMsg">
+    Momenteel geen foto's om te tonen.<br />
+    (Kom straks terug 😉)
+  </div>
 
-  display: flex;
-  flex-direction: column;
-  gap: var(--sponsor-gap);
-  z-index: 10;
-}
-
-/* Bovenste afbeelding i.p.v. tekst */
-.sponsorLogoTop {
-  width: 100%;
-  height: auto;
-  display: block;
-  border-radius: 12px;
-}
-
-/* 'Laatste update: 10:42' onder de afbeelding */
-.lastRefreshUnder {
-  position: fixed;
-  bottom: 1rem;
-  right: 1.2rem;                 /* altijd rechts in het fotoveld */
-  font-size: 0.7rem;
-  font-weight: 500;
-  opacity: 0.85;
-  color: #fff;
-  background: rgba(0, 0, 0, 0.45);
-  padding: 6px 10px;
-  border-radius: 10px;
-  white-space: nowrap;           /* alles op Ã©Ã©n regel */
-  z-index: 15;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.4);
-}
-
-/* Kolom met logoâ€™s */
-.sponsorCol{
-  display: flex;
-  flex-direction: column;
-  gap: var(--sponsor-gap);
-  overflow: hidden;
-  flex: 1;
-  border-right: 0px solid transparent;
-}
-
-/* EÃ©n logo-tegel â€” verhouding 1.4 : 1 (gÃ©Ã©n kader/achtergrond meer) */
-.sponsorItem{
-  width: 100%;
-  aspect-ratio: 1.4 / 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: transparent;
-  border: 0;
-  box-shadow: none;
-  border-radius: 0;
-  transition: opacity .45s ease, transform .45s ease, filter .6s ease;
-}
-
-.sponsorItem img{
-  max-width: 100%;
-  max-height: 100%;
-  object-fit: contain;
-  opacity: 1;
-  border-radius: 12px;   /* â† deze toevoegen */
-  box-shadow: 0 6px 14px rgba(0,0,0,0.4); /* optioneel voor wat diepte */
-}
-
-/* Sponsor animaties -------------------------------------------------------- */
-
-/* 1) slide-up bij Ã©Ã©n stap rotatie */
-.sponsorCol.slideOnce .sponsorItem{
-  animation: sponsorSlideUp .45s ease both;
-}
-
-@keyframes sponsorSlideUp {
-  0%   { transform: translateY(16px); opacity: .75; }
-  100% { transform: translateY(0);    opacity: 1; }
-}
-
-/* 2) smooth-scroll (continue) */
-.sponsorCol.smoothScroll{
-  position: relative;
-  overflow: hidden; /* clip binnen de kolom */
-}
-
-.sponsorCol.smoothScroll .sponsorTrack{
-  display: flex;
-  flex-direction: column;
-  gap: var(--sponsor-gap);
-  will-change: transform;
-  animation: sponsorSmooth var(--sponsor-scroll-duration) linear infinite;
-}
-
-@keyframes sponsorSmooth {
-  0%   { transform: translateY(0); }
-  100% { transform: translateY(-50%); } /* we renderen de lijst meervoudig voor een naadloze loop */
-}
-
-/* 3) fade-in/out bij wissel */
-.sponsorCol.fadeChange .sponsorItem{
-  animation: sponsorFade .6s ease both;
-}
-@keyframes sponsorFade {
-  0% { opacity: 0; transform: translateY(8px); }
-  100%{ opacity: 1; transform: translateY(0);  }
-}
-
-/* 4) highlight-glow op eerste item */
-.sponsorItem.glowPulse{
-  filter: drop-shadow(0 0 0px rgba(255,255,255,0))
-          drop-shadow(0 0 0px rgba(255,255,255,0));
-  animation: glowPulse 1.2s ease-in-out;
-}
-@keyframes glowPulse {
-  0%   { filter: drop-shadow(0 0 0px rgba(255,255,255,0)); }
-  50%  { filter: drop-shadow(0 0 12px rgba(255,255,255,0.65)); }
-  100% { filter: drop-shadow(0 0 0px rgba(255,255,255,0)); }
-}
-
-/* Container voor de foto (neemt resterende breedte) */
-.slideshow {
-  position: fixed;
-  top: 0;
-  left: var(--sidebar-w);
-  right: 0;
-  bottom: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: #000;
-  overflow: hidden;
-}
-
-/* Crossfade-lagen (JS zet positionering inline) */
-.slideImage {
-  max-width: calc(100vw - var(--sidebar-w));
-  max-height: 100vh;
-  object-fit: contain;
-  background-color: #000;
-  border-radius: 12px;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8);
-}
-
-/* Foto-animaties ----------------------------------------------------------- */
-
-/* Basis fade (huidig) */
-.slideImage.anim-fade{
-  transition: opacity var(--fade-ms, 1000ms) ease;
-}
-
-/* Fade + subtiele zoom-in */
-.slideImage.anim-fadezoom{
-  transform: scale(1.04);
-  transition: opacity var(--fade-ms, 1000ms) ease,
-              transform calc(var(--fade-ms, 1000ms) + 400ms) ease;
-}
-.slideImage.anim-fadezoom[style*="opacity: 1"]{
-  transform: scale(1);
-}
-
-/* Slide transitie (nieuw beeld schuift in, oud schuift licht uit) */
-.slideImage.anim-slide{
-  transform: translateX(8%);
-  transition: opacity var(--fade-ms, 1000ms) ease,
-              transform var(--fade-ms, 1000ms) ease;
-}
-.slideImage.anim-slide[style*="opacity: 1"]{
-  transform: translateX(0%);
-}
-
-/* Ken Burns: langzaam pannen/zoomen terwijl het beeld in fade't */
-.slideImage.anim-kenburns{
-  animation: kenBurnsMove 12s ease-in-out forwards;
-  transition: opacity var(--fade-ms, 1000ms) ease;
-}
-@keyframes kenBurnsMove {
-  0%   { transform: scale(1.05) translate(-1%, -1%); }
-  50%  { transform: scale(1.12) translate(1%,  1%);  }
-  100% { transform: scale(1.18) translate(-1%, 0%);  }
-}
-
-/* Footer overlay â€” groter gemaakt en makkelijk aanpasbaar via variabelen */
-.footerOverlay {
-  position: fixed;
-  bottom: 1rem;
-  left: calc(var(--sidebar-w) + 0px);
-  right: 0;
-  text-align: center;
-  pointer-events: none;
-  z-index: 5;
-}
-
-.sponsorLine {
-  display: inline-block;
-  background: rgba(0, 0, 0, 0.5);
-  padding: var(--footer-pad-y) var(--footer-pad-x);
-  font-size: var(--footer-font-size);
-  border-radius: 14px;
-  color: #fff;
-  font-weight: 600;
-  letter-spacing: 0.02em;
-  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.6);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-}
-
-/* Placeholder tekst als er geen foto's zijn */
-.noPhotosMsg {
-  position: fixed;
-  inset: 0 0 0 var(--sidebar-w);
-  color: #888;
-  font-size: 1.2rem;
-  line-height: 1.6rem;
-  text-align: center;
-  font-weight: 400;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: radial-gradient(
-    circle at 60% 30%,
-    rgba(255, 255, 255, 0.08) 0%,
-    rgba(0, 0, 0, 0) 60%
-  );
-  opacity: 0;
-  transition: opacity 0.5s ease;
-  padding: 2rem;
-  text-shadow: 0 2px 6px rgba(0, 0, 0, 0.8);
-}
-
-/* Klein scherm: sidebar verbergen (optioneel) */
-@media (max-width: 900px) {
-  .sponsorSidebar { display: none; }
-  .slideshow { left: 0; }
-  .footerOverlay { left: 0; }
-}
-
-
-
-
-
+  <script src="slideshow.js"></script>
+</body>
+</html>
