@@ -49,30 +49,25 @@ body {
   z-index: 10;
 
   /* Zorg dat absolute kinderen (last update) zich hieraan positioneren */
-  position: fixed; /* is al fixed, maar benadrukt 'positioned' ancestor gedrag */
+  position: fixed;
 }
 
 /* Desktop: volgorde afdwingen; last update volledig onderaan */
 .sponsorLogoTop { order: 1; border-radius: 12px; } /* afgerond */
 .sponsorCol     { order: 2; flex: 1; }
 .lastRefreshUnder{
-  order: 3; /* voor fallback als absolute wegvalt */
-  /* Overlay onderaan, over de sponsors heen */
+  order: 3;
   position: absolute;
   left: 12px; right: 12px; bottom: 8px;
   margin: 0;
-
   font-size: .82rem;
   color: #fff;
   text-align: center;
-
-  /* Geen balk/achtergrond; wel subtiele leesbaarheid */
   background: transparent;
   border: 0;
   opacity: .95;
   text-shadow: 0 0 8px rgba(0,0,0,.8);
-
-  pointer-events: none;  /* nooit klikbaar */
+  pointer-events: none;
 }
 
 /* Sponsorlogo's kolom */
@@ -85,13 +80,13 @@ body {
 .sponsorItem{
   width: 100%; aspect-ratio: 1.4 / 1;
   display: flex; align-items: center; justify-content: center;
-  background: transparent; border: 0; box-shadow: none; border-radius: 0;
+  background: transparent; border: 0; box-shadow: none;
 }
 .sponsorItem img{
   max-width: 100%;
   max-height: 100%;
   object-fit: contain;
-  border-radius: 12px;    /* afgerond */
+  border-radius: 12px;
 }
 
 /* Slideshow rechts */
@@ -108,23 +103,22 @@ body {
   object-fit: contain; background:#000; border-radius:12px;
   box-shadow: 0 20px 60px rgba(0,0,0,0.8);
   opacity: 0;
-  transition: opacity 1s ease;      /* géén transform hier! */
+  transition: opacity 1s ease;
   transform-origin: 50% 50%;
 }
 
-/* Ken Burns – LINEAIR en zonder 50%-keyframe (geen “stop” of richtingswissel) */
+/* Ken Burns – lineair zonder stopmoment */
 .slideImage.kenburns{
   will-change: transform;
   animation: kenburns var(--kb-duration, 8000ms) linear forwards;
 }
-/* Begin→einde; waarden kun je in JS via CSS-variabelen aanpassen indien gewenst */
 @keyframes kenburns{
   0%   { transform: scale(1.03) translate(-12px, -8px); }
   100% { transform: scale(1.09) translate( 12px,  8px); }
 }
 
 /* Extra foto-effecten */
-.slide-incoming.fade-zoom { transform: scale(1.03); } /* start iets groter, JS zet terug naar 1.00 */
+.slide-incoming.fade-zoom { transform: scale(1.03); }
 .slide-incoming.slide-from-right { transform: translateX(var(--slide-shift)); }
 .slide-outgoing.slide-to-left    { transform: translateX(calc(var(--slide-shift) * -1)); opacity: 0; }
 
@@ -165,23 +159,16 @@ body {
 
   .sponsorSidebar{
     top:auto; left:0; right:0; bottom:0; height:110px;
-    padding:10px 12px; backdrop-filter: blur(6px);
-    /* driekleur-lijntje nu aan BOVENrand van de balk */
-    background-image: linear-gradient(
-      to bottom,
-      transparent calc(100% - 6px),
-      #c00000 calc(100% - 6px),
-      #c00000 calc(100% - 4px),
-      #ffd700 calc(100% - 4px),
-      #ffd700 calc(100% - 2px),
-      #c00000 calc(100% - 2px),
-      #c00000 100%
-    );
+    padding:10px 12px;
+    backdrop-filter: blur(6px);
+
+    /* 1️⃣ lijn weg op mobiel */
+    background-image: none !important;
   }
 
   .sponsorLogoTop{ display:none; }
 
-  /* volgorde in mobiele balk: logorij (1), last update overlay (blijft absolute) */
+  /* volgorde in mobiele balk: logorij (1), last update weg */
   .sponsorCol{
     order:1; flex:1; display:grid; grid-auto-flow: column; grid-auto-columns: 32vw;
     gap:12px; overflow-x:auto; overscroll-behavior-x:contain;
@@ -190,7 +177,16 @@ body {
   .sponsorCol::-webkit-scrollbar{ display:none; }
   .sponsorItem{ aspect-ratio: 1.4 / 1; }
 
-  /* lastRefreshUnder blijft absolute onderaan de balk, dus niets extra nodig */
+  /* 2️⃣ last update verwijderen op mobiel */
+  .lastRefreshUnder{
+    display: none !important;
+  }
+
+  /* 3️⃣ footer kleiner */
+  .sponsorLine{
+    font-size: calc(var(--footer-font-size) * 0.75) !important;
+  }
+
   .slideshow{ left:0; bottom:110px; }
   #loader{ left:0; bottom:110px; }
   .footerOverlay{ left:0; bottom:120px; }
