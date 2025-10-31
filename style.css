@@ -38,7 +38,20 @@ body {
   padding: var(--sponsor-pad);
   background: rgba(0,0,0,0.15);
   backdrop-filter: blur(2px);
-  border-right: 1px solid rgba(255,255,255,0.12);
+
+  /* 🔴🟡🔴 Driedubbele clubkleur-lijn (rood-geel-rood) */
+  border-right: 6px double transparent;
+  background-image:
+    linear-gradient(to right,
+      #c00000 0%,
+      #c00000 33%,
+      #ffd700 33%,
+      #ffd700 66%,
+      #c00000 66%,
+      #c00000 100%);
+  background-origin: border-box;
+  background-clip: content-box, border-box;
+
   display: flex;
   flex-direction: column;
   gap: var(--sponsor-gap);
@@ -270,5 +283,6 @@ body {
   .slideshow { left: 0; }
   .footerOverlay { left: 0; }
 }
+
 
 
