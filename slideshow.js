@@ -2,7 +2,7 @@
 const API_KEY = "AIzaSyCcCnm--0E_87Jl0_oHpGA6q7h5_ZoOong";
 const LIVE_FOLDER_ID = "1DPRvYwG-nluiePp3ZRuCFcseze5kAHp4";
 const TOP_FOLDER_ID  = "1N8wfqj7BFtx-jAYj0qM8-uqJVbblWXw3";
-const SPONSOR_FOLDER_ID = "HIER_DE_SPONSOR_MAP_ID"; // <-- VUL IN
+const SPONSOR_FOLDER_ID = "18RJ4L_e30JlxDUcG945kWpcafy28KFIO";
 
 /* Kies je animaties hier */
 const FOTO_ANIMATIE    = "fade";        // "fade" | "fade-zoom" | "slide" | "kenburns"
