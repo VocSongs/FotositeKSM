@@ -47,13 +47,10 @@ body {
 
   display: flex; flex-direction: column; gap: var(--sponsor-gap);
   z-index: 10;
-
-  /* Zorg dat absolute kinderen (last update) zich hieraan positioneren */
-  position: fixed;
 }
 
 /* Desktop: volgorde afdwingen; last update volledig onderaan */
-.sponsorLogoTop { order: 1; border-radius: 12px; } /* afgerond */
+.sponsorLogoTop { order: 1; border-radius: 12px; }
 .sponsorCol     { order: 2; flex: 1; }
 .lastRefreshUnder{
   order: 3;
@@ -161,14 +158,11 @@ body {
     top:auto; left:0; right:0; bottom:0; height:110px;
     padding:10px 12px;
     backdrop-filter: blur(6px);
-
-    /* 1️⃣ lijn weg op mobiel */
-    background-image: none !important;
+    background-image: none !important; /* lijn weg */
   }
 
   .sponsorLogoTop{ display:none; }
 
-  /* volgorde in mobiele balk: logorij (1), last update weg */
   .sponsorCol{
     order:1; flex:1; display:grid; grid-auto-flow: column; grid-auto-columns: 32vw;
     gap:12px; overflow-x:auto; overscroll-behavior-x:contain;
@@ -177,15 +171,11 @@ body {
   .sponsorCol::-webkit-scrollbar{ display:none; }
   .sponsorItem{ aspect-ratio: 1.4 / 1; }
 
-  /* 2️⃣ last update verwijderen op mobiel */
-  .lastRefreshUnder{
-    display: none !important;
-  }
+  /* last update verbergen */
+  .lastRefreshUnder{ display:none !important; }
 
-  /* 3️⃣ footer kleiner */
-  .sponsorLine{
-    font-size: calc(var(--footer-font-size) * 0.75) !important;
-  }
+  /* kleinere footer */
+  .sponsorLine{ font-size: calc(var(--footer-font-size) * 0.75) !important; }
 
   .slideshow{ left:0; bottom:110px; }
   #loader{ left:0; bottom:110px; }
@@ -200,4 +190,49 @@ body {
   0% { box-shadow: 0 0 0 0 rgba(255,255,255,0); }
   50%{ box-shadow: 0 0 16px 4px rgba(255,255,255,.85); }
   100%{ box-shadow: 0 0 0 0 rgba(255,255,255,0); }
+}
+
+/* ====== FADES VOOR SMOOTH SCROLL SPONSORS ====== */
+
+/* Desktop: fade boven & onder */
+.sponsorSidebar::before,
+.sponsorSidebar::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  width: 100%;
+  height: 20px;
+  pointer-events: none;
+  z-index: 11;
+}
+
+.sponsorSidebar::before {
+  top: 0;
+  background: linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,0) 100%);
+}
+
+.sponsorSidebar::after {
+  bottom: 0;
+  background: linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,0) 100%);
+}
+
+/* Mobiel: fade links & rechts */
+@media (max-width: 900px) {
+  .sponsorSidebar::before,
+  .sponsorSidebar::after {
+    width: 20px;
+    height: 100%;
+    top: 0;
+    background: none;
+  }
+
+  .sponsorSidebar::before {
+    left: 0;
+    background: linear-gradient(to right, rgba(0,0,0,1) 0%, rgba(0,0,0,0) 100%);
+  }
+
+  .sponsorSidebar::after {
+    right: 0;
+    background: linear-gradient(to left, rgba(0,0,0,1) 0%, rgba(0,0,0,0) 100%);
+  }
 }
