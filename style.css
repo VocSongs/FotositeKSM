@@ -52,12 +52,28 @@ body {
 /* Headerbeeld in kolom (desktop) */
 .sponsorLogoTop{ width:100%; height:auto; display:block; border-radius:12px; }
 
-/* Laatste update (desktop) */
+/* Laatste update (desktop onderaan) */
 .lastRefreshUnder{
-  margin-top: 6px; font-size: .82rem; opacity: .85;
-  padding: 4px 6px; border-radius: 10px;
-  background: rgba(0,0,0,0.25);
-  border: 1px solid rgba(255,255,255,0.12);
+  margin-top: auto;            /* duwt naar de onderkant van de kolom */
+  font-size: 0.82rem;
+  opacity: 0.85;
+  padding: 4px 6px;
+  border-radius: 10px;
+  background: transparent;     /* geen vlak */
+  border: 0;
+  text-align: center;
+}
+
+@media (max-width: 900px) {
+  .lastRefreshUnder{
+    order: 2;
+    margin: 6px auto 0;
+    background: transparent;
+    border: 0;
+    opacity: 0.85;
+    text-align: center;
+    font-size: 0.8rem;
+  }
 }
 
 /* Sponsorlogo's kolom */
