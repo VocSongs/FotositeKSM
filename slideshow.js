@@ -6,7 +6,7 @@ const SPONSOR_FOLDER_ID = "18RJ4L_e30JlxDUcG945kWpcafy28KFIO";
 
 /* Kies je animaties hier */
 const FOTO_ANIMATIE    = "kenburns";    // "fade" | "fade-zoom" | "slide" | "kenburns"
-const SPONSOR_ANIMATIE = "slide-up";    // "slide-up" | "smooth-scroll" | "fade" | "glow"
+const SPONSOR_ANIMATIE = "smooth-scroll";    // "slide-up" | "smooth-scroll" | "fade" | "glow"
 
 const IS_MOBILE = window.matchMedia("(max-width: 900px)").matches;
 const LIVE_MAX_AGE_HOURS = 2;
