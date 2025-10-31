@@ -2,35 +2,36 @@
   --sidebar-w: 240px;
   --sponsor-gap: 14px;
   --sponsor-pad: 16px;
+
+  /* Footer makkelijk aanpassen */
   --footer-font-size: 1.0rem;
   --footer-pad-y: 0.7rem;
   --footer-pad-x: 1.2rem;
 }
 
 /* Basis */
+* { box-sizing: border-box; }
+html, body { height: 100%; }
 body {
   margin: 0;
   background: #000;
   color: #fff;
   font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
   overflow: hidden;
-  height: 100vh;
-  width: 100vw;
 }
 
-/* Sponsor sidebar */
+/* Sponsor sidebar (desktop links) */
 .sponsorSidebar{
   position: fixed;
   top: 0;
   left: 0;
   width: var(--sidebar-w);
   height: 100vh;
-  box-sizing: border-box;
   padding: var(--sponsor-pad);
   background: rgba(0,0,0,0.15);
   backdrop-filter: blur(2px);
 
-  /* 🔴🟡🔴 Fijne driedubbele lijn */
+  /* 🔴🟡🔴 smalle driedubbele lijn aan de RECHTERkant (enkel randje) */
   border-right: none;
   background-image: linear-gradient(
     to right,
@@ -48,10 +49,10 @@ body {
   display: flex;
   flex-direction: column;
   gap: var(--sponsor-gap);
-  z-index: 10;
+  z-index: 10; /* boven de foto, onder de loader (die staat alleen rechts) */
 }
 
-/* Bovenste afbeelding */
+/* Headerbeeld in kolom (desktop) */
 .sponsorLogoTop{
   width: 100%;
   height: auto;
@@ -59,7 +60,7 @@ body {
   border-radius: 12px;
 }
 
-/* Laatste update */
+/* Laatste update (desktop) */
 .lastRefreshUnder{
   margin-top: 6px;
   font-size: 0.82rem;
@@ -70,7 +71,7 @@ body {
   border: 1px solid rgba(255,255,255,0.12);
 }
 
-/* Sponsorlogo's */
+/* Sponsorlogo's kolom */
 .sponsorCol{
   display: flex;
   flex-direction: column;
@@ -79,6 +80,7 @@ body {
   flex: 1;
 }
 
+/* Enkel de afbeelding, geen kader/achtergrond/schaduw */
 .sponsorItem{
   width: 100%;
   aspect-ratio: 1.4 / 1;
@@ -90,14 +92,13 @@ body {
   box-shadow: none;
   border-radius: 0;
 }
-
 .sponsorItem img{
   max-width: 100%;
   max-height: 100%;
   object-fit: contain;
 }
 
-/* Slideshow */
+/* Slideshow rechts */
 .slideshow {
   position: fixed;
   top: 0;
@@ -110,7 +111,6 @@ body {
   background: #000;
   overflow: hidden;
 }
-
 .slideImage {
   max-width: calc(100vw - var(--sidebar-w));
   max-height: 100vh;
@@ -118,9 +118,10 @@ body {
   background-color: #000;
   border-radius: 12px;
   box-shadow: 0 20px 60px rgba(0,0,0,0.8);
+  transition: opacity 1s ease;
 }
 
-/* Footer */
+/* Footer overlay */
 .footerOverlay {
   position: fixed;
   bottom: 1rem;
@@ -130,7 +131,6 @@ body {
   pointer-events: none;
   z-index: 5;
 }
-
 .sponsorLine {
   display: inline-block;
   background: rgba(0,0,0,0.5);
@@ -144,7 +144,7 @@ body {
   border: 1px solid rgba(255,255,255,0.15);
 }
 
-/* Geen foto's */
+/* Geen foto's bericht */
 .noPhotosMsg {
   position: fixed;
   inset: 0 0 0 var(--sidebar-w);
@@ -160,41 +160,74 @@ body {
   padding: 2rem;
 }
 
-/* Loader */
+/* Loader – ALLEEN boven fotoveld; bedekt sponsors NIET */
 #loader {
   position: fixed;
   top: 0;
-  left: var(--sidebar-w);
+  left: var(--sidebar-w); /* zodat de sponsorbalk zichtbaar blijft */
   right: 0;
   bottom: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  background: #000;
+  background: #000;  /* zelfde als fotoveld */
   z-index: 9999;
   transition: opacity 0.8s ease;
 }
-.loaderLogo {
-  max-width: 28%;
-  height: auto;
-  opacity: 0.9;
-}
+.loaderLogo { max-width: 28%; height: auto; opacity: 0.9; }
 .loaderText {
-  margin-top: 1rem;
-  font-size: 1.1rem;
-  color: #fff;
+  margin-top: 1rem; font-size: 1.1rem; color: #fff;
   text-shadow: 0 0 8px rgba(255,255,255,0.6);
-  animation: pulseText 2s ease-in-out infinite;
+  animation: pulseText 2s ease-in-out infinite; opacity: .95;
 }
 @keyframes pulseText {
-  0%,100% {text-shadow:0 0 6px rgba(255,255,255,0.2);opacity:0.7;}
-  50%{text-shadow:0 0 20px rgba(255,255,255,0.8);opacity:1;}
+  0%,100% { text-shadow: 0 0 6px rgba(255,255,255,0.2); opacity: 0.7; }
+  50% { text-shadow: 0 0 20px rgba(255,255,255,0.8); opacity: 1; }
 }
-#loader.fadeOut { opacity:0; pointer-events:none; }
+#loader.fadeOut { opacity: 0; pointer-events: none; }
 
+/* ====== MOBIEL / TABLET (≤900px): sponsors naar onder ====== */
 @media (max-width: 900px) {
-  .sponsorSidebar { display: none; }
-  .slideshow { left: 0; }
-  .footerOverlay { left: 0; }
+  :root{ --sidebar-w: 0px; }
+
+  .sponsorSidebar{
+    top: auto; left: 0; right: 0; bottom: 0;
+    height: 110px;
+    padding: 10px 12px;
+    backdrop-filter: blur(6px);
+    /* driekleuren-lijntje nu aan BOVENrand van de balk */
+    background-image: linear-gradient(
+      to bottom,
+      transparent calc(100% - 6px),
+      #c00000 calc(100% - 6px),
+      #c00000 calc(100% - 4px),
+      #ffd700 calc(100% - 4px),
+      #ffd700 calc(100% - 2px),
+      #c00000 calc(100% - 2px),
+      #c00000 100%
+    );
+  }
+
+  .sponsorLogoTop { display: none; }
+  .lastRefreshUnder { order: 2; margin: 6px auto 0; background: transparent; border: 0; opacity: .85; }
+
+  .sponsorCol{
+    order: 1;
+    flex: 1;
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: 32vw;      /* 2–3 logo’s tegelijk zichtbaar */
+    gap: 12px;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  .sponsorCol::-webkit-scrollbar{ display: none; }
+  .sponsorItem{ aspect-ratio: 1.4 / 1; }
+
+  .slideshow { left: 0; bottom: 110px; }
+  #loader   { left: 0; bottom: 110px; }   /* loader NIET over sponsorbalk */
+  .footerOverlay { left: 0; bottom: 120px; }
 }

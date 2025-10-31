@@ -6,17 +6,19 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Veteranencup Live Foto's</title>
   <link rel="stylesheet" href="style.css" />
+  <link rel="manifest" href="manifest.webmanifest">
+  <meta name="theme-color" content="#000000">
 </head>
 <body>
-  <!-- Sponsor sidebar -->
+  <!-- Sponsor sidebar (desktop) / onderbalk (mobiel) -->
   <aside id="sponsorSidebar" class="sponsorSidebar">
     <img src="26.jpg" alt="Sponsors" class="sponsorLogoTop" />
     <div class="lastRefreshUnder" id="lastRefresh">Laatste update: --:--</div>
-    <div id="sponsorCol" class="sponsorCol"></div>
+    <div id="sponsorCol" class="sponsorCol" aria-label="Sponsors"></div>
   </aside>
 
   <!-- Slideshow area -->
-  <div class="slideshow"></div>
+  <div class="slideshow" aria-label="Slideshow"></div>
 
   <!-- Footer overlay -->
   <div class="footerOverlay">
@@ -30,14 +32,19 @@
     Momenteel geen foto's om te tonen.<br />(Kom straks terug 😉)
   </div>
 
-  <!-- Loader -->
-  <div id="loader">
-    <img src="logoKSM.png" alt="Krom & Stijf Millen" class="loaderLogo">
-    <div class="loaderText">Even geduld. De foto's worden nu ingeladen…</div>
+  <!-- Loader: staat ALLEEN in fotoveld, nooit over de sponsors -->
+  <div id="loader" aria-live="polite" aria-busy="true">
+    <img src="logoKSM.gif" alt="Krom & Stijf Millen" class="loaderLogo">
+    <div class="loaderText">Even laden…</div>
   </div>
 
   <script src="slideshow.js"></script>
+
+  <!-- (Optioneel) eenvoudige service worker voor snellere herlaad -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('./service-worker.js').catch(()=>{});
+    }
+  </script>
 </body>
 </html>
-
-
