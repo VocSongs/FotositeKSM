@@ -49,37 +49,21 @@ body {
   z-index: 10;
 }
 
-/* Headerbeeld in kolom (desktop) */
-.sponsorLogoTop{ width:100%; height:auto; display:block; border-radius:12px; }
-
-/* Laatste update (desktop onderaan) */
+/* Desktop: volgorde afdwingen zodat 'Last update' echt onderaan staat */
+.sponsorLogoTop { order: 1; }
+.sponsorCol     { order: 2; flex: 1; }
 .lastRefreshUnder{
-  margin-top: auto;            /* duwt naar de onderkant van de kolom */
-  font-size: 0.82rem;
-  opacity: 0.85;
-  padding: 4px 6px;
-  border-radius: 10px;
-  background: transparent;     /* geen vlak */
-  border: 0;
-  text-align: center;
-}
-
-@media (max-width: 900px) {
-  .lastRefreshUnder{
-    order: 2;
-    margin: 6px auto 0;
-    background: transparent;
-    border: 0;
-    opacity: 0.85;
-    text-align: center;
-    font-size: 0.8rem;
-  }
+  order: 3;
+  margin-top: 0;
+  font-size: .82rem; opacity: .85;
+  padding: 4px 6px; border-radius: 10px;
+  background: transparent; border: 0; text-align: center;
 }
 
 /* Sponsorlogo's kolom */
 .sponsorCol{
   display: flex; flex-direction: column; gap: var(--sponsor-gap);
-  overflow: hidden; flex: 1;
+  overflow: hidden;
 }
 
 /* Enkel de afbeelding, geen kader/achtergrond/schaduw */
@@ -96,28 +80,34 @@ body {
   display:flex; align-items:center; justify-content:center;
   background:#000; overflow:hidden;
 }
-.slideImage {
-  position: absolute; inset: 0; margin: auto;
+
+/* Belangrijk voor Ken Burns: alleen opacity transition, geen transform */
+.slideImage{
+  position:absolute; inset:0; margin:auto;
   max-width: calc(100vw - var(--sidebar-w)); max-height: 100vh;
-  object-fit: contain; background: #000; border-radius: 12px;
+  object-fit: contain; background:#000; border-radius:12px;
   box-shadow: 0 20px 60px rgba(0,0,0,0.8);
   opacity: 0;
-  transition: opacity 1s ease;   /* alleen opacity, géén transform */
+  transition: opacity 1s ease;      /* géén transform hier! */
   transform-origin: 50% 50%;
 }
 
-/* Ken Burns: laat de animatie het werk doen (niet de transition) */
-.slideImage.kenburns {
-  transition: opacity 1s ease !important;  /* enkel opacity */
+/* Ken Burns – animatie neemt transform over */
+.slideImage.kenburns{
   will-change: transform;
-  animation: kenburns var(--kb-duration, 8s) ease-in-out forwards;
+  animation: kenburns var(--kb-duration, 8000ms) ease-in-out forwards;
 }
 
-@keyframes kenburns {
-  0%   { transform: scale(1.03) translate(0px, 0px);   }
-  50%  { transform: scale(1.06) translate(8px, -8px);  }
-  100% { transform: scale(1.09) translate(-8px, 8px);  }
+@keyframes kenburns{
+  0%   { transform: scale(1.03) translate(0px, 0px); }
+  50%  { transform: scale(1.06) translate(8px, -8px); }
+  100% { transform: scale(1.09) translate(-8px, 8px); }
 }
+
+/* Extra foto-effecten */
+.slide-incoming.fade-zoom { transform: scale(1.03); } /* start iets groter, JS zet terug naar 1.00 */
+.slide-incoming.slide-from-right { transform: translateX(var(--slide-shift)); }
+.slide-outgoing.slide-to-left    { transform: translateX(calc(var(--slide-shift) * -1)); opacity: 0; }
 
 /* Footer */
 .footerOverlay{ position:fixed; bottom:1rem; left:calc(var(--sidebar-w)); right:0; text-align:center; z-index:5; }
@@ -153,6 +143,7 @@ body {
 /* ====== MOBIEL / TABLET (≤900px): sponsors naar onder ====== */
 @media (max-width: 900px) {
   :root{ --sidebar-w: 0px; }
+
   .sponsorSidebar{
     top:auto; left:0; right:0; bottom:0; height:110px;
     padding:10px 12px; backdrop-filter: blur(6px);
@@ -168,30 +159,25 @@ body {
       #c00000 100%
     );
   }
+
   .sponsorLogoTop{ display:none; }
-  .lastRefreshUnder{ order:2; margin:6px auto 0; background:transparent; border:0; opacity:.85; }
-  .sponsorCol{
-    order:1; flex:1; display:grid; grid-auto-flow: column; grid-auto-columns: 32vw;
+
+  /* volgorde in mobiele balk: logorij (1), last update (2) */
+  .sponsorCol{ order:1; flex:1; display:grid; grid-auto-flow: column; grid-auto-columns: 32vw;
     gap:12px; overflow-x:auto; overscroll-behavior-x:contain;
     scrollbar-width:none; -ms-overflow-style:none;
   }
   .sponsorCol::-webkit-scrollbar{ display:none; }
   .sponsorItem{ aspect-ratio: 1.4 / 1; }
+
+  .lastRefreshUnder{
+    order:2; margin:6px auto 0; background:transparent; border:0; opacity:.85; text-align:center; font-size:.8rem;
+  }
+
   .slideshow{ left:0; bottom:110px; }
   #loader{ left:0; bottom:110px; }
   .footerOverlay{ left:0; bottom:120px; }
 }
-
-/* ====== EFFECTEN (foto's) ====== */
-.slide-incoming.fade-zoom { transform: scale(1.03); }
-.slide-incoming.kenburns   { animation: kenburns 8s ease-in-out forwards; }
-@keyframes kenburns {
-  0%   { transform: scale(1.03) translate(0, 0); }
-  50%  { transform: scale(1.06) translate(8px, -8px); }
-  100% { transform: scale(1.09) translate(-8px, 8px); }
-}
-.slide-incoming.slide-from-right { transform: translateX(var(--slide-shift)); }
-.slide-outgoing.slide-to-left    { transform: translateX(calc(var(--slide-shift) * -1)); opacity: .0; }
 
 /* ====== EFFECTEN (sponsors) ====== */
 .sponsorCol.fade-anim { transition: opacity .5s ease; opacity: 0; }
@@ -199,6 +185,6 @@ body {
 .sponsorItem.glow { box-shadow: 0 0 0 0 rgba(255,255,255,0); animation: sponsorGlow var(--glow-time) ease; border-radius: 12px; }
 @keyframes sponsorGlow {
   0% { box-shadow: 0 0 0 0 rgba(255,255,255,0); }
-  50%{ box-shadow: 0 0 16px 4px rgba(255,255,255,.8); }
+  50%{ box-shadow: 0 0 16px 4px rgba(255,255,255,.85); }
   100%{ box-shadow: 0 0 0 0 rgba(255,255,255,0); }
 }

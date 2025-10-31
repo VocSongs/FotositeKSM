@@ -5,13 +5,13 @@ const TOP_FOLDER_ID  = "1N8wfqj7BFtx-jAYj0qM8-uqJVbblWXw3";
 const SPONSOR_FOLDER_ID = "18RJ4L_e30JlxDUcG945kWpcafy28KFIO";
 
 /* Kies je animaties hier */
-const FOTO_ANIMATIE    = "kenburns";        // "fade" | "fade-zoom" | "slide" | "kenburns"
-const SPONSOR_ANIMATIE = "smooth-scroll";    // "slide-up" | "smooth-scroll" | "fade" | "glow"
+const FOTO_ANIMATIE    = "kenburns";    // "fade" | "fade-zoom" | "slide" | "kenburns"
+const SPONSOR_ANIMATIE = "slide-up";    // "slide-up" | "smooth-scroll" | "fade" | "glow"
 
 const IS_MOBILE = window.matchMedia("(max-width: 900px)").matches;
 const LIVE_MAX_AGE_HOURS = 2;
-const DISPLAY_TIME = 7000;
-const REFRESH_INTERVAL = (IS_MOBILE ? 90 : 60) * 1000; // iets minder vaak op mobiel
+const DISPLAY_TIME = 7000;               // >6s oogt mooier voor Ken Burns
+const REFRESH_INTERVAL = (IS_MOBILE ? 90 : 60) * 1000;
 const FADE_MS = 1000;
 const NUM_SPONSORS_VISIBLE = 4;
 const SPONSOR_REFRESH_INTERVAL = 5 * 60 * 1000;
@@ -26,7 +26,6 @@ let currentIndex    = 0;
 let containerEl, lastRefreshEl, noPhotosEl, sponsorColEl, currentImgEl;
 let slideTimer, refreshTimer, sponsorTimer;
 let loaderHidden = false;
-
 let smoothScrollTimer = null;
 
 /***** DRIVE HELPERS *****/
@@ -50,10 +49,11 @@ function filterRecentLivePhotos(files){
 function shuffleArray(a){const arr=[...a];for(let i=arr.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[arr[i],arr[j]]=[arr[j],arr[i]];}return arr;}
 function buildSlideshowList(top,live){return shuffleArray([...live,...top]);}
 
-/***** SLIDESHOW CROSSFADE + EFFECTEN *****/
+/***** SLIDESHOW + EFFECTEN *****/
 function createLayeredImgElement(){
   const el=document.createElement("img");
   el.className="slideImage";
+  el.style.opacity="0";
   return el;
 }
 function hideLoader(){
@@ -72,55 +72,59 @@ function crossfadeToCurrent(){
 
   const pre=new Image();
   pre.src=photo.url;
-pre.onload = () => {
-  hideLoader();
 
-  const incoming = createLayeredImgElement();
-  incoming.src = pre.src;
+  pre.onload=()=>{
+    hideLoader();
 
-  // --- FOTO_ANIMATIE voorbereiding ---
-  if (FOTO_ANIMATIE === "kenburns") {
-    // beginstand gelijk aan keyframes 0%
-    incoming.style.transform = "scale(1.03) translate(0px, 0px)";
-    incoming.style.transformOrigin = "50% 50%";
-    incoming.style.willChange = "transform";
-    // optioneel: duur afstemmen op je kijktijd
-    incoming.style.setProperty("--kb-duration", Math.max(DISPLAY_TIME, 6000) + "ms");
-  } else if (FOTO_ANIMATIE === "fade-zoom") {
-    incoming.classList.add("slide-incoming", "fade-zoom");
-  } else if (FOTO_ANIMATIE === "slide") {
-    incoming.classList.add("slide-incoming", "slide-from-right");
-  }
+    const incoming=createLayeredImgElement();
+    incoming.src=pre.src;
 
-  containerEl.appendChild(incoming);
+    // FOTO-EFFECT setup vóór in DOM plaatsen
+    if(FOTO_ANIMATIE==="kenburns"){
+      // beginstand exact gelijk aan keyframes 0%
+      incoming.style.transform = "scale(1.03) translate(0px, 0px)";
+      incoming.style.transformOrigin = "50% 50%";
+      incoming.style.willChange = "transform";
+      incoming.style.setProperty("--kb-duration", Math.max(DISPLAY_TIME, 6000) + "ms");
+    } else if(FOTO_ANIMATIE==="fade-zoom"){
+      incoming.classList.add("slide-incoming","fade-zoom");
+    } else if(FOTO_ANIMATIE==="slide"){
+      incoming.classList.add("slide-incoming","slide-from-right");
+    }
 
-  // Forceer layout, dan pas inkomende effecten activeren
-  requestAnimationFrame(() => {
-    requestAnimationFrame(() => {
-      if (FOTO_ANIMATIE === "kenburns") {
+    containerEl.appendChild(incoming);
+
+    requestAnimationFrame(()=>{ requestAnimationFrame(()=>{
+      // Activeer Ken Burns pas ná layout
+      if(FOTO_ANIMATIE==="kenburns"){
         incoming.classList.add("kenburns");
       }
-      // Fade-in
-      incoming.style.opacity = "1";
-      if (FOTO_ANIMATIE === "fade-zoom") {
-        // rustig terug naar 1.00
-        incoming.style.transform = "scale(1.00)";
+      // Fade in nieuwe
+      incoming.style.opacity="1";
+      // fade-zoom: rustig terug naar 1.00
+      if(FOTO_ANIMATIE==="fade-zoom"){ incoming.style.transform="scale(1.00)"; }
+      // fade-out oude
+      if(currentImgEl){ currentImgEl.style.opacity="0"; }
+      // slide: oude schuift licht uit
+      if(FOTO_ANIMATIE==="slide" && currentImgEl){
+        currentImgEl.classList.add("slide-outgoing","slide-to-left");
       }
-      if (currentImgEl) currentImgEl.style.opacity = "0";
-      if (FOTO_ANIMATIE === "slide" && currentImgEl) {
-        currentImgEl.classList.add("slide-outgoing", "slide-to-left");
-      }
-    });
-  });
+    });});
 
-  setTimeout(() => {
-    if (currentImgEl) currentImgEl.remove();
-    currentImgEl = incoming;
-    // opruimen
-    incoming.classList.remove("slide-incoming","fade-zoom","slide-from-right","kenburns");
-  }, FADE_MS);
-};
-  pre.onerror=()=>{ currentIndex=(currentIndex+1)%slideshowImages.length; crossfadeToCurrent(); };
+    // Na fade is nieuwe de huidige; laat 'kenburns' staan (niet verwijderen!)
+    setTimeout(()=>{
+      if(currentImgEl) currentImgEl.remove();
+      currentImgEl = incoming;
+      // Helper-classes opruimen, maar NIET 'kenburns'
+      incoming.classList.remove("slide-incoming","fade-zoom","slide-from-right");
+    }, FADE_MS);
+  };
+
+  pre.onerror=()=>{
+    // sla over en probeer volgende
+    currentIndex=(currentIndex+1)%slideshowImages.length;
+    crossfadeToCurrent();
+  };
 }
 function nextImage(){
   if(!slideshowImages.length) return;
@@ -143,14 +147,14 @@ function renderSponsorColumn(){
   if(!sponsorColEl) return;
 
   if(SPONSOR_ANIMATIE==="smooth-scroll" && !IS_MOBILE){
-    // Smooth vertical scroll (desktop) — we bouwen één lange track met duplicaat
+    // Smooth vertical scroll (desktop) — dubbele lijst voor naadloze loop
     sponsorColEl.innerHTML="";
     const track=document.createElement("div");
     track.style.display="flex"; track.style.flexDirection="column"; track.style.gap="var(--sponsor-gap)";
     sponsorColEl.appendChild(track);
 
     const list = sponsorImages.length ? sponsorImages : Array(NUM_SPONSORS_VISIBLE).fill(null);
-    for(const pass of [0,1]){ // twee keer voor naadloze loop
+    for(const pass of [0,1]){
       list.forEach(file=>{
         const item=document.createElement("div"); item.className="sponsorItem";
         if(file){
@@ -161,18 +165,18 @@ function renderSponsorColumn(){
       });
     }
 
-    sponsorColEl.scrollTop = 0; // reset
+    sponsorColEl.scrollTop = 0;
     if(smoothScrollTimer) clearInterval(smoothScrollTimer);
     smoothScrollTimer = setInterval(()=>{
       sponsorColEl.scrollTop += 1;
       if(sponsorColEl.scrollTop >= track.scrollHeight/2){
-        sponsorColEl.scrollTop = 0; // loop
+        sponsorColEl.scrollTop = 0;
       }
     }, 30);
     return;
   }
 
-  // Andere modes (slide-up / fade / glow) — gewone render van zichtbare set
+  // Andere modes (slide-up / fade / glow)
   if(smoothScrollTimer){ clearInterval(smoothScrollTimer); smoothScrollTimer=null; }
   sponsorColEl.innerHTML="";
   const list = sponsorImages.length ? sponsorImages : [];
@@ -231,7 +235,7 @@ function applySponsorSwitchEffect(){
       break;
 
     case "smooth-scroll":
-      // continue scroll loopt al; geen discrete switch nodig
+      // loopt continu; geen discrete switch nodig
       break;
   }
 }
@@ -254,7 +258,7 @@ async function refreshFromDrive(){
   }
   crossfadeToCurrent();
 
-  // sponsors bij verversen: in fade-mode even zacht in
+  // sponsors bij verversen: in fade-mode zacht in
   if(SPONSOR_ANIMATIE==="fade"){
     sponsorColEl.classList.add("fade-anim");
     setTimeout(()=>{
