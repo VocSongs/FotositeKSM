@@ -47,17 +47,32 @@ body {
 
   display: flex; flex-direction: column; gap: var(--sponsor-gap);
   z-index: 10;
+
+  /* Zorg dat absolute kinderen (last update) zich hieraan positioneren */
+  position: fixed; /* is al fixed, maar benadrukt 'positioned' ancestor gedrag */
 }
 
-/* Desktop: volgorde afdwingen zodat 'Last update' echt onderaan staat */
-.sponsorLogoTop { order: 1; }
+/* Desktop: volgorde afdwingen; last update volledig onderaan */
+.sponsorLogoTop { order: 1; border-radius: 12px; } /* afgerond */
 .sponsorCol     { order: 2; flex: 1; }
 .lastRefreshUnder{
-  order: 3;
-  margin-top: 0;
-  font-size: .82rem; opacity: .85;
-  padding: 4px 6px; border-radius: 10px;
-  background: transparent; border: 0; text-align: center;
+  order: 3; /* voor fallback als absolute wegvalt */
+  /* Overlay onderaan, over de sponsors heen */
+  position: absolute;
+  left: 12px; right: 12px; bottom: 8px;
+  margin: 0;
+
+  font-size: .82rem;
+  color: #fff;
+  text-align: center;
+
+  /* Geen balk/achtergrond; wel subtiele leesbaarheid */
+  background: transparent;
+  border: 0;
+  opacity: .95;
+  text-shadow: 0 0 8px rgba(0,0,0,.8);
+
+  pointer-events: none;  /* nooit klikbaar */
 }
 
 /* Sponsorlogo's kolom */
@@ -66,13 +81,18 @@ body {
   overflow: hidden;
 }
 
-/* Enkel de afbeelding, geen kader/achtergrond/schaduw */
+/* Enkel de afbeelding, geen kader/achtergrond/schaduw — wel afgerond */
 .sponsorItem{
   width: 100%; aspect-ratio: 1.4 / 1;
   display: flex; align-items: center; justify-content: center;
   background: transparent; border: 0; box-shadow: none; border-radius: 0;
 }
-.sponsorItem img{ max-width: 100%; max-height: 100%; object-fit: contain; }
+.sponsorItem img{
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  border-radius: 12px;    /* afgerond */
+}
 
 /* Slideshow rechts */
 .slideshow{
@@ -92,16 +112,15 @@ body {
   transform-origin: 50% 50%;
 }
 
-/* Ken Burns – animatie neemt transform over */
+/* Ken Burns – LINEAIR en zonder 50%-keyframe (geen “stop” of richtingswissel) */
 .slideImage.kenburns{
   will-change: transform;
-  animation: kenburns var(--kb-duration, 8000ms) ease-in-out forwards;
+  animation: kenburns var(--kb-duration, 8000ms) linear forwards;
 }
-
+/* Begin→einde; waarden kun je in JS via CSS-variabelen aanpassen indien gewenst */
 @keyframes kenburns{
-  0%   { transform: scale(1.03) translate(0px, 0px); }
-  50%  { transform: scale(1.06) translate(8px, -8px); }
-  100% { transform: scale(1.09) translate(-8px, 8px); }
+  0%   { transform: scale(1.03) translate(-12px, -8px); }
+  100% { transform: scale(1.09) translate( 12px,  8px); }
 }
 
 /* Extra foto-effecten */
@@ -162,18 +181,16 @@ body {
 
   .sponsorLogoTop{ display:none; }
 
-  /* volgorde in mobiele balk: logorij (1), last update (2) */
-  .sponsorCol{ order:1; flex:1; display:grid; grid-auto-flow: column; grid-auto-columns: 32vw;
+  /* volgorde in mobiele balk: logorij (1), last update overlay (blijft absolute) */
+  .sponsorCol{
+    order:1; flex:1; display:grid; grid-auto-flow: column; grid-auto-columns: 32vw;
     gap:12px; overflow-x:auto; overscroll-behavior-x:contain;
     scrollbar-width:none; -ms-overflow-style:none;
   }
   .sponsorCol::-webkit-scrollbar{ display:none; }
   .sponsorItem{ aspect-ratio: 1.4 / 1; }
 
-  .lastRefreshUnder{
-    order:2; margin:6px auto 0; background:transparent; border:0; opacity:.85; text-align:center; font-size:.8rem;
-  }
-
+  /* lastRefreshUnder blijft absolute onderaan de balk, dus niets extra nodig */
   .slideshow{ left:0; bottom:110px; }
   #loader{ left:0; bottom:110px; }
   .footerOverlay{ left:0; bottom:120px; }
