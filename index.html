@@ -39,8 +39,6 @@
   </div>
 
   <script src="slideshow.js"></script>
-
-  <!-- (Optioneel) eenvoudige service worker voor snellere herlaad -->
   <script>
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('./service-worker.js').catch(()=>{});

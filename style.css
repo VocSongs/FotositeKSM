@@ -7,26 +7,25 @@
   --footer-font-size: 1.0rem;
   --footer-pad-y: 0.7rem;
   --footer-pad-x: 1.2rem;
+
+  /* Animatie-variabelen */
+  --slide-shift: 40px;     /* verplaatsing bij foto 'slide' */
+  --glow-time: 600ms;      /* duur sponsor glow */
 }
 
 /* Basis */
 * { box-sizing: border-box; }
 html, body { height: 100%; }
 body {
-  margin: 0;
-  background: #000;
-  color: #fff;
+  margin: 0; background: #000; color: #fff;
   font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
   overflow: hidden;
 }
 
 /* Sponsor sidebar (desktop links) */
 .sponsorSidebar{
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: var(--sidebar-w);
-  height: 100vh;
+  position: fixed; top:0; left:0;
+  width: var(--sidebar-w); height: 100vh;
   padding: var(--sponsor-pad);
   background: rgba(0,0,0,0.15);
   backdrop-filter: blur(2px);
@@ -46,157 +45,87 @@ body {
   background-repeat: no-repeat;
   background-size: 100% 100%;
 
-  display: flex;
-  flex-direction: column;
-  gap: var(--sponsor-gap);
-  z-index: 10; /* boven de foto, onder de loader (die staat alleen rechts) */
+  display: flex; flex-direction: column; gap: var(--sponsor-gap);
+  z-index: 10;
 }
 
 /* Headerbeeld in kolom (desktop) */
-.sponsorLogoTop{
-  width: 100%;
-  height: auto;
-  display: block;
-  border-radius: 12px;
-}
+.sponsorLogoTop{ width:100%; height:auto; display:block; border-radius:12px; }
 
 /* Laatste update (desktop) */
 .lastRefreshUnder{
-  margin-top: 6px;
-  font-size: 0.82rem;
-  opacity: 0.85;
-  padding: 4px 6px;
-  border-radius: 10px;
+  margin-top: 6px; font-size: .82rem; opacity: .85;
+  padding: 4px 6px; border-radius: 10px;
   background: rgba(0,0,0,0.25);
   border: 1px solid rgba(255,255,255,0.12);
 }
 
 /* Sponsorlogo's kolom */
 .sponsorCol{
-  display: flex;
-  flex-direction: column;
-  gap: var(--sponsor-gap);
-  overflow: hidden;
-  flex: 1;
+  display: flex; flex-direction: column; gap: var(--sponsor-gap);
+  overflow: hidden; flex: 1;
 }
 
 /* Enkel de afbeelding, geen kader/achtergrond/schaduw */
 .sponsorItem{
-  width: 100%;
-  aspect-ratio: 1.4 / 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: transparent;
-  border: 0;
-  box-shadow: none;
-  border-radius: 0;
+  width: 100%; aspect-ratio: 1.4 / 1;
+  display: flex; align-items: center; justify-content: center;
+  background: transparent; border: 0; box-shadow: none; border-radius: 0;
 }
-.sponsorItem img{
-  max-width: 100%;
-  max-height: 100%;
-  object-fit: contain;
-}
+.sponsorItem img{ max-width: 100%; max-height: 100%; object-fit: contain; }
 
 /* Slideshow rechts */
-.slideshow {
-  position: fixed;
-  top: 0;
-  left: var(--sidebar-w);
-  right: 0;
-  bottom: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: #000;
-  overflow: hidden;
+.slideshow{
+  position: fixed; top:0; left: var(--sidebar-w); right:0; bottom:0;
+  display:flex; align-items:center; justify-content:center;
+  background:#000; overflow:hidden;
 }
-.slideImage {
-  max-width: calc(100vw - var(--sidebar-w));
-  max-height: 100vh;
-  object-fit: contain;
-  background-color: #000;
-  border-radius: 12px;
+.slideImage{
+  position:absolute; inset:0; margin:auto;
+  max-width: calc(100vw - var(--sidebar-w)); max-height: 100vh;
+  object-fit: contain; background:#000; border-radius:12px;
   box-shadow: 0 20px 60px rgba(0,0,0,0.8);
-  transition: opacity 1s ease;
+  opacity: 0; transition: opacity 1s ease, transform 1s ease;
 }
 
-/* Footer overlay */
-.footerOverlay {
-  position: fixed;
-  bottom: 1rem;
-  left: calc(var(--sidebar-w));
-  right: 0;
-  text-align: center;
-  pointer-events: none;
-  z-index: 5;
-}
-.sponsorLine {
-  display: inline-block;
-  background: rgba(0,0,0,0.5);
+/* Footer */
+.footerOverlay{ position:fixed; bottom:1rem; left:calc(var(--sidebar-w)); right:0; text-align:center; z-index:5; }
+.sponsorLine{
+  display:inline-block; background: rgba(0,0,0,0.5);
   padding: var(--footer-pad-y) var(--footer-pad-x);
   font-size: var(--footer-font-size);
-  border-radius: 14px;
-  color: #fff;
-  font-weight: 600;
-  letter-spacing: 0.02em;
+  border-radius: 14px; color:#fff; font-weight:600; letter-spacing:.02em;
   box-shadow: 0 15px 40px rgba(0,0,0,0.6);
   border: 1px solid rgba(255,255,255,0.15);
 }
 
 /* Geen foto's bericht */
-.noPhotosMsg {
-  position: fixed;
-  inset: 0 0 0 var(--sidebar-w);
-  color: #888;
-  font-size: 1.2rem;
-  text-align: center;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+.noPhotosMsg{
+  position: fixed; inset: 0 0 0 var(--sidebar-w);
+  color:#888; font-size:1.2rem; text-align:center;
+  display:flex; align-items:center; justify-content:center;
   background: radial-gradient(circle at 60% 30%, rgba(255,255,255,0.08) 0%, rgba(0,0,0,0) 60%);
-  opacity: 0;
-  transition: opacity 0.5s ease;
-  padding: 2rem;
+  opacity:0; transition: opacity .5s ease; padding:2rem;
 }
 
 /* Loader – ALLEEN boven fotoveld; bedekt sponsors NIET */
-#loader {
-  position: fixed;
-  top: 0;
-  left: var(--sidebar-w); /* zodat de sponsorbalk zichtbaar blijft */
-  right: 0;
-  bottom: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  background: #000;  /* zelfde als fotoveld */
-  z-index: 9999;
-  transition: opacity 0.8s ease;
+#loader{
+  position: fixed; top:0; left: var(--sidebar-w); right:0; bottom:0;
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  background:#000; z-index: 9999; transition: opacity .8s ease;
 }
-.loaderLogo { max-width: 28%; height: auto; opacity: 0.9; }
-.loaderText {
-  margin-top: 1rem; font-size: 1.1rem; color: #fff;
-  text-shadow: 0 0 8px rgba(255,255,255,0.6);
-  animation: pulseText 2s ease-in-out infinite; opacity: .95;
-}
-@keyframes pulseText {
-  0%,100% { text-shadow: 0 0 6px rgba(255,255,255,0.2); opacity: 0.7; }
-  50% { text-shadow: 0 0 20px rgba(255,255,255,0.8); opacity: 1; }
-}
-#loader.fadeOut { opacity: 0; pointer-events: none; }
+.loaderLogo{ max-width: 28%; height:auto; opacity:.9; }
+.loaderText{ margin-top:1rem; font-size:1.1rem; color:#fff; text-shadow:0 0 8px rgba(255,255,255,.6); animation:pulseText 2s ease-in-out infinite; opacity:.95; }
+@keyframes pulseText{ 0%,100%{text-shadow:0 0 6px rgba(255,255,255,.2);opacity:.7;} 50%{text-shadow:0 0 20px rgba(255,255,255,.8);opacity:1;} }
+#loader.fadeOut{ opacity:0; pointer-events:none; }
 
 /* ====== MOBIEL / TABLET (≤900px): sponsors naar onder ====== */
 @media (max-width: 900px) {
   :root{ --sidebar-w: 0px; }
-
   .sponsorSidebar{
-    top: auto; left: 0; right: 0; bottom: 0;
-    height: 110px;
-    padding: 10px 12px;
-    backdrop-filter: blur(6px);
-    /* driekleuren-lijntje nu aan BOVENrand van de balk */
+    top:auto; left:0; right:0; bottom:0; height:110px;
+    padding:10px 12px; backdrop-filter: blur(6px);
+    /* driekleur-lijntje nu aan BOVENrand van de balk */
     background-image: linear-gradient(
       to bottom,
       transparent calc(100% - 6px),
@@ -208,26 +137,37 @@ body {
       #c00000 100%
     );
   }
-
-  .sponsorLogoTop { display: none; }
-  .lastRefreshUnder { order: 2; margin: 6px auto 0; background: transparent; border: 0; opacity: .85; }
-
+  .sponsorLogoTop{ display:none; }
+  .lastRefreshUnder{ order:2; margin:6px auto 0; background:transparent; border:0; opacity:.85; }
   .sponsorCol{
-    order: 1;
-    flex: 1;
-    display: grid;
-    grid-auto-flow: column;
-    grid-auto-columns: 32vw;      /* 2–3 logo’s tegelijk zichtbaar */
-    gap: 12px;
-    overflow-x: auto;
-    overscroll-behavior-x: contain;
-    scrollbar-width: none;
-    -ms-overflow-style: none;
+    order:1; flex:1; display:grid; grid-auto-flow: column; grid-auto-columns: 32vw;
+    gap:12px; overflow-x:auto; overscroll-behavior-x:contain;
+    scrollbar-width:none; -ms-overflow-style:none;
   }
-  .sponsorCol::-webkit-scrollbar{ display: none; }
+  .sponsorCol::-webkit-scrollbar{ display:none; }
   .sponsorItem{ aspect-ratio: 1.4 / 1; }
+  .slideshow{ left:0; bottom:110px; }
+  #loader{ left:0; bottom:110px; }
+  .footerOverlay{ left:0; bottom:120px; }
+}
 
-  .slideshow { left: 0; bottom: 110px; }
-  #loader   { left: 0; bottom: 110px; }   /* loader NIET over sponsorbalk */
-  .footerOverlay { left: 0; bottom: 120px; }
+/* ====== EFFECTEN (foto's) ====== */
+.slide-incoming.fade-zoom { transform: scale(1.03); }
+.slide-incoming.kenburns   { animation: kenburns 8s ease-in-out forwards; }
+@keyframes kenburns {
+  0%   { transform: scale(1.03) translate(0, 0); }
+  50%  { transform: scale(1.06) translate(8px, -8px); }
+  100% { transform: scale(1.09) translate(-8px, 8px); }
+}
+.slide-incoming.slide-from-right { transform: translateX(var(--slide-shift)); }
+.slide-outgoing.slide-to-left    { transform: translateX(calc(var(--slide-shift) * -1)); opacity: .0; }
+
+/* ====== EFFECTEN (sponsors) ====== */
+.sponsorCol.fade-anim { transition: opacity .5s ease; opacity: 0; }
+.sponsorCol.fade-anim.show { opacity: 1; }
+.sponsorItem.glow { box-shadow: 0 0 0 0 rgba(255,255,255,0); animation: sponsorGlow var(--glow-time) ease; border-radius: 12px; }
+@keyframes sponsorGlow {
+  0% { box-shadow: 0 0 0 0 rgba(255,255,255,0); }
+  50%{ box-shadow: 0 0 16px 4px rgba(255,255,255,.8); }
+  100%{ box-shadow: 0 0 0 0 rgba(255,255,255,0); }
 }

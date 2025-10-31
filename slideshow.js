@@ -2,7 +2,11 @@
 const API_KEY = "AIzaSyCcCnm--0E_87Jl0_oHpGA6q7h5_ZoOong";
 const LIVE_FOLDER_ID = "1DPRvYwG-nluiePp3ZRuCFcseze5kAHp4";
 const TOP_FOLDER_ID  = "1N8wfqj7BFtx-jAYj0qM8-uqJVbblWXw3";
-const SPONSOR_FOLDER_ID = "18RJ4L_e30JlxDUcG945kWpcafy28KFIO";
+const SPONSOR_FOLDER_ID = "HIER_DE_SPONSOR_MAP_ID"; // <-- VUL IN
+
+/* Kies je animaties hier */
+const FOTO_ANIMATIE    = "fade";        // "fade" | "fade-zoom" | "slide" | "kenburns"
+const SPONSOR_ANIMATIE = "slide-up";    // "slide-up" | "smooth-scroll" | "fade" | "glow"
 
 const IS_MOBILE = window.matchMedia("(max-width: 900px)").matches;
 const LIVE_MAX_AGE_HOURS = 2;
@@ -22,6 +26,8 @@ let currentIndex    = 0;
 let containerEl, lastRefreshEl, noPhotosEl, sponsorColEl, currentImgEl;
 let slideTimer, refreshTimer, sponsorTimer;
 let loaderHidden = false;
+
+let smoothScrollTimer = null;
 
 /***** DRIVE HELPERS *****/
 async function fetchFolderImages(folderId, isSponsor=false){
@@ -44,16 +50,10 @@ function filterRecentLivePhotos(files){
 function shuffleArray(a){const arr=[...a];for(let i=arr.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[arr[i],arr[j]]=[arr[j],arr[i]];}return arr;}
 function buildSlideshowList(top,live){return shuffleArray([...live,...top]);}
 
-/***** SLIDESHOW CROSSFADE *****/
+/***** SLIDESHOW CROSSFADE + EFFECTEN *****/
 function createLayeredImgElement(){
   const el=document.createElement("img");
   el.className="slideImage";
-  el.style.position="absolute";
-  el.style.inset="0";
-  el.style.margin="auto";
-  el.style.transition=`opacity ${FADE_MS}ms ease`;
-  el.style.opacity="0";
-  el.alt="live foto";
   return el;
 }
 function hideLoader(){
@@ -65,30 +65,52 @@ function hideLoader(){
 function crossfadeToCurrent(){
   if(!slideshowImages.length){
     if(currentImgEl){ currentImgEl.remove(); currentImgEl=null; }
-    noPhotosEl.style.opacity=1;
-    return;
+    noPhotosEl.style.opacity=1; return;
   }
   noPhotosEl.style.opacity=0;
   const photo=slideshowImages[currentIndex];
+
   const pre=new Image();
   pre.src=photo.url;
   pre.onload=()=>{
-    hideLoader(); // zodra 1e foto klaar is
-    const next=createLayeredImgElement();
-    next.src=pre.src;
-    containerEl.appendChild(next);
-    requestAnimationFrame(()=>{requestAnimationFrame(()=>{
-      next.style.opacity="1";
-      if(currentImgEl) currentImgEl.style.opacity="0";
+    hideLoader();
+    const incoming=createLayeredImgElement();
+    incoming.src=pre.src;
+    incoming.style.opacity="0";
+
+    // Voorbereiden per fotostijl
+    if(FOTO_ANIMATIE==="fade-zoom"){ incoming.classList.add("slide-incoming","fade-zoom"); }
+    else if(FOTO_ANIMATIE==="kenburns"){ incoming.classList.add("slide-incoming","kenburns"); }
+    else if(FOTO_ANIMATIE==="slide"){ incoming.classList.add("slide-incoming","slide-from-right"); }
+
+    containerEl.appendChild(incoming);
+
+    // Uitgaand effect bij 'slide'
+    if(currentImgEl && FOTO_ANIMATIE==="slide"){
+      currentImgEl.classList.add("slide-outgoing","slide-to-left");
+    }
+
+    requestAnimationFrame(()=>{ requestAnimationFrame(()=>{
+      // Fade-in
+      incoming.style.opacity="1";
+      // Reset transforms voor bepaalde stijlen om mooie animatie te krijgen
+      if(FOTO_ANIMATIE==="fade-zoom"){ incoming.style.transform="scale(1.00)"; }
+      if(currentImgEl){ currentImgEl.style.opacity="0"; }
     });});
-    setTimeout(()=>{ if(currentImgEl) currentImgEl.remove(); currentImgEl=next; },FADE_MS);
+
+    setTimeout(()=>{
+      if(currentImgEl) currentImgEl.remove();
+      currentImgEl = incoming;
+      // verwijder hulp-classes
+      incoming.classList.remove("slide-incoming","fade-zoom","kenburns","slide-from-right");
+    }, FADE_MS);
   };
   pre.onerror=()=>{ currentIndex=(currentIndex+1)%slideshowImages.length; crossfadeToCurrent(); };
 }
 function nextImage(){
   if(!slideshowImages.length) return;
   currentIndex=(currentIndex+1)%slideshowImages.length;
-  rotateSponsorsOnce();
+  applySponsorSwitchEffect();
   crossfadeToCurrent();
 }
 
@@ -101,10 +123,45 @@ async function refreshSponsorsFromDrive(){
   if(files.length) sponsorImages=shuffleArray(files);
   renderSponsorColumn();
 }
+
 function renderSponsorColumn(){
   if(!sponsorColEl) return;
+
+  if(SPONSOR_ANIMATIE==="smooth-scroll" && !IS_MOBILE){
+    // Smooth vertical scroll (desktop) — we bouwen één lange track met duplicaat
+    sponsorColEl.innerHTML="";
+    const track=document.createElement("div");
+    track.style.display="flex"; track.style.flexDirection="column"; track.style.gap="var(--sponsor-gap)";
+    sponsorColEl.appendChild(track);
+
+    const list = sponsorImages.length ? sponsorImages : Array(NUM_SPONSORS_VISIBLE).fill(null);
+    for(const pass of [0,1]){ // twee keer voor naadloze loop
+      list.forEach(file=>{
+        const item=document.createElement("div"); item.className="sponsorItem";
+        if(file){
+          const img=document.createElement("img"); img.alt="sponsor logo"; img.src=file.url;
+          item.appendChild(img);
+        }
+        track.appendChild(item);
+      });
+    }
+
+    sponsorColEl.scrollTop = 0; // reset
+    if(smoothScrollTimer) clearInterval(smoothScrollTimer);
+    smoothScrollTimer = setInterval(()=>{
+      sponsorColEl.scrollTop += 1;
+      if(sponsorColEl.scrollTop >= track.scrollHeight/2){
+        sponsorColEl.scrollTop = 0; // loop
+      }
+    }, 30);
+    return;
+  }
+
+  // Andere modes (slide-up / fade / glow) — gewone render van zichtbare set
+  if(smoothScrollTimer){ clearInterval(smoothScrollTimer); smoothScrollTimer=null; }
   sponsorColEl.innerHTML="";
-  if(!sponsorImages.length){
+  const list = sponsorImages.length ? sponsorImages : [];
+  if(!list.length){
     for(let i=0;i<NUM_SPONSORS_VISIBLE;i++){
       const ph=document.createElement("div"); ph.className="sponsorItem";
       sponsorColEl.appendChild(ph);
@@ -112,18 +169,56 @@ function renderSponsorColumn(){
     return;
   }
   for(let i=0;i<NUM_SPONSORS_VISIBLE;i++){
-    const file=sponsorImages[i%sponsorImages.length];
+    const file=list[i%list.length];
     const item=document.createElement("div"); item.className="sponsorItem";
     const img=document.createElement("img"); img.alt="sponsor logo"; img.src=file.url;
     item.appendChild(img);
     sponsorColEl.appendChild(item);
   }
 }
+
 function rotateSponsorsOnce(){
   if(!sponsorImages.length) return;
   const first=sponsorImages.shift();
   sponsorImages.push(first);
-  renderSponsorColumn();
+}
+
+function applySponsorSwitchEffect(){
+  if(!sponsorImages.length) return;
+
+  switch(SPONSOR_ANIMATIE){
+    case "slide-up":
+      rotateSponsorsOnce();
+      renderSponsorColumn();
+      break;
+
+    case "fade":
+      sponsorColEl.classList.add("fade-anim");
+      setTimeout(()=>{
+        rotateSponsorsOnce();
+        renderSponsorColumn();
+        sponsorColEl.classList.add("show");
+        setTimeout(()=>{
+          sponsorColEl.classList.remove("fade-anim","show");
+        }, 520);
+      }, 20);
+      break;
+
+    case "glow":
+      rotateSponsorsOnce();
+      renderSponsorColumn();
+      // highlight bovenste logo kort
+      const firstItem = sponsorColEl.querySelector(".sponsorItem");
+      if(firstItem){
+        firstItem.classList.add("glow");
+        setTimeout(()=> firstItem.classList.remove("glow"), 650);
+      }
+      break;
+
+    case "smooth-scroll":
+      // continue scroll loopt al; geen discrete switch nodig
+      break;
+  }
 }
 
 /***** REFRESH *****/
@@ -143,10 +238,22 @@ async function refreshFromDrive(){
       now.toLocaleTimeString("nl-BE",{hour:"2-digit",minute:"2-digit"});
   }
   crossfadeToCurrent();
+
+  // sponsors bij verversen: in fade-mode even zacht in
+  if(SPONSOR_ANIMATIE==="fade"){
+    sponsorColEl.classList.add("fade-anim");
+    setTimeout(()=>{
+      renderSponsorColumn();
+      sponsorColEl.classList.add("show");
+      setTimeout(()=> sponsorColEl.classList.remove("fade-anim","show"), 520);
+    }, 20);
+  } else {
+    renderSponsorColumn();
+  }
 }
 
-/***** MOBIEL: zachte auto-scroll sponsors (marquee) *****/
-function autoScrollSponsors(){
+/***** MOBIEL: zachte auto-scroll sponsors (horizontaal) *****/
+function autoScrollSponsorsMobile(){
   const el=document.getElementById('sponsorCol');
   if(!el) return;
   let dir=1;
@@ -165,14 +272,12 @@ async function init(){
   noPhotosEl   = document.getElementById("noPhotosMsg");
   sponsorColEl = document.getElementById("sponsorCol");
 
-  // Eerste loads
   await Promise.all([ refreshFromDrive(), refreshSponsorsFromDrive() ]);
 
-  // Timers
   slideTimer   = setInterval(()=> nextImage(), DISPLAY_TIME);
   refreshTimer = setInterval(()=> refreshFromDrive(), REFRESH_INTERVAL);
   sponsorTimer = setInterval(()=> refreshSponsorsFromDrive(), SPONSOR_REFRESH_INTERVAL);
 
-  autoScrollSponsors(); // mobiel
+  autoScrollSponsorsMobile();
 }
 init();
