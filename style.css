@@ -195,39 +195,50 @@ body {
   100%{ box-shadow: 0 0 0 0 rgba(255,255,255,0); }
 }
 
-/* ====== FADES VOOR SMOOTH SCROLL SPONSORS (op de kolom zelf) ====== */
+/* ====== FADES (met CSS mask, scrolt NIET mee) ====== */
 
-/* Desktop: fade boven & onder op de sponsor-kolom (onder het header-logo) */
-.sponsorCol::before,
-.sponsorCol::after {
-  content: "";
-  position: absolute;
-  left: 0;
-  width: 100%;
-  height: 50px;
-  pointer-events: none;
-  z-index: 5; /* boven de logo's, onder eventuele overlays */
+/* Tweakbaar: pas de fade-breedte aan (px) */
+:root{
+  --fade-edge: 22px; /* bv. 20–30px */
 }
 
-.sponsorCol::before {
-  top: 0;
-  /* zachte in-fade van bovenaf */
-  background: linear-gradient(
+/* Desktop: verticale fade boven & onder op de kolom met sponsors */
+.sponsorCol{
+  /* bestaande regels mogen blijven staan */
+  -webkit-mask-image: linear-gradient(
     to bottom,
-    rgba(0,0,0,1) 0%,
+    rgba(0,0,0,0) 0,
+    rgba(0,0,0,1) var(--fade-edge),
+    rgba(0,0,0,1) calc(100% - var(--fade-edge)),
+    rgba(0,0,0,0) 100%
+  );
+  mask-image: linear-gradient(
+    to bottom,
+    rgba(0,0,0,0) 0,
+    rgba(0,0,0,1) var(--fade-edge),
+    rgba(0,0,0,1) calc(100% - var(--fade-edge)),
     rgba(0,0,0,0) 100%
   );
 }
 
-.sponsorCol::after {
-  bottom: 0;
-  /* DONKERDER starten onderaan: eerst een stuk volledig zwart, dan pas vervagen */
-  background: linear-gradient(
-    to top,
-    rgba(0,0,0,1) 0%,
-    rgba(0,0,0,1) 40%,
-    rgba(0,0,0,0) 100%
-  );
+/* Mobiel: horizontale fade links & rechts op de rij met sponsors */
+@media (max-width: 900px){
+  .sponsorCol{
+    -webkit-mask-image: linear-gradient(
+      to right,
+      rgba(0,0,0,0) 0,
+      rgba(0,0,0,1) var(--fade-edge),
+      rgba(0,0,0,1) calc(100% - var(--fade-edge)),
+      rgba(0,0,0,0) 100%
+    );
+    mask-image: linear-gradient(
+      to right,
+      rgba(0,0,0,0) 0,
+      rgba(0,0,0,1) var(--fade-edge),
+      rgba(0,0,0,1) calc(100% - var(--fade-edge)),
+      rgba(0,0,0,0) 100%
+    );
+  }
 }
 
 /* Mobiel: fade links & rechts op de horizontale logorij */
