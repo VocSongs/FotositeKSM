@@ -225,7 +225,7 @@ body {
   .sponsorSidebar::before,
   .sponsorSidebar::after {
     position: fixed;
-    width: 20px;
+    width: 50px;
     height: 110px;             /* zelfde hoogte als de balk */
     top: auto;
     bottom: 0;
