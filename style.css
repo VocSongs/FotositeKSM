@@ -198,22 +198,53 @@ body {
 .sponsorSidebar::before,
 .sponsorSidebar::after {
   content: "";
-  position: absolute;
+  position: fixed;              /* belangrijk: fixed i.p.v. absolute → blijft altijd zichtbaar */
   left: 0;
-  width: 100%;
-  height: 100px;
+  width: var(--sidebar-w);
+  height: 20px;
   pointer-events: none;
-  z-index: 11;
+  z-index: 999;                 /* boven alle sponsoritems en 'last update' */
 }
 
 .sponsorSidebar::before {
   top: 0;
-  background: linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,0) 100%);
+  background: linear-gradient(to bottom,
+    rgba(0,0,0,1) 0%,
+    rgba(0,0,0,0) 100%);
 }
 
 .sponsorSidebar::after {
   bottom: 0;
-  background: linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,0) 100%);
+  background: linear-gradient(to top,
+    rgba(0,0,0,1) 0%,
+    rgba(0,0,0,0) 100%);
+}
+
+/* Mobiel: fade links & rechts */
+@media (max-width: 900px) {
+  .sponsorSidebar::before,
+  .sponsorSidebar::after {
+    position: fixed;
+    width: 20px;
+    height: 110px;             /* zelfde hoogte als de balk */
+    top: auto;
+    bottom: 0;
+    z-index: 999;
+  }
+
+  .sponsorSidebar::before {
+    left: 0;
+    background: linear-gradient(to right,
+      rgba(0,0,0,1) 0%,
+      rgba(0,0,0,0) 100%);
+  }
+
+  .sponsorSidebar::after {
+    right: 0;
+    background: linear-gradient(to left,
+      rgba(0,0,0,1) 0%,
+      rgba(0,0,0,0) 100%);
+  }
 }
 
 /* Mobiel: fade links & rechts */
