@@ -69,8 +69,11 @@ body {
 
 /* Sponsorlogo's kolom */
 .sponsorCol{
-  display: flex; flex-direction: column; gap: var(--sponsor-gap);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sponsor-gap);
   overflow: hidden;
+  position: relative;   /* <-- nodig voor de pseudo-elementen */
 }
 
 /* Enkel de afbeelding, geen kader/achtergrond/schaduw — wel afgerond */
@@ -192,58 +195,68 @@ body {
   100%{ box-shadow: 0 0 0 0 rgba(255,255,255,0); }
 }
 
-/* ====== FADES VOOR SMOOTH SCROLL SPONSORS ====== */
+/* ====== FADES VOOR SMOOTH SCROLL SPONSORS (op de kolom zelf) ====== */
 
-/* Desktop: fade boven & onder */
-.sponsorSidebar::before,
-.sponsorSidebar::after {
+/* Desktop: fade boven & onder op de sponsor-kolom (onder het header-logo) */
+.sponsorCol::before,
+.sponsorCol::after {
   content: "";
-  position: fixed;              /* belangrijk: fixed i.p.v. absolute → blijft altijd zichtbaar */
+  position: absolute;
   left: 0;
-  width: var(--sidebar-w);
+  width: 100%;
   height: 20px;
   pointer-events: none;
-  z-index: 999;                 /* boven alle sponsoritems en 'last update' */
+  z-index: 5; /* boven de logo's, onder eventuele overlays */
 }
 
-.sponsorSidebar::before {
+.sponsorCol::before {
   top: 0;
-  background: linear-gradient(to bottom,
+  /* zachte in-fade van bovenaf */
+  background: linear-gradient(
+    to bottom,
     rgba(0,0,0,1) 0%,
-    rgba(0,0,0,0) 100%);
+    rgba(0,0,0,0) 100%
+  );
 }
 
-.sponsorSidebar::after {
+.sponsorCol::after {
   bottom: 0;
-  background: linear-gradient(to top,
+  /* DONKERDER starten onderaan: eerst een stuk volledig zwart, dan pas vervagen */
+  background: linear-gradient(
+    to top,
     rgba(0,0,0,1) 0%,
-    rgba(0,0,0,0) 100%);
+    rgba(0,0,0,1) 40%,
+    rgba(0,0,0,0) 100%
+  );
 }
 
-/* Mobiel: fade links & rechts */
+/* Mobiel: fade links & rechts op de horizontale logorij */
 @media (max-width: 900px) {
-  .sponsorSidebar::before,
-  .sponsorSidebar::after {
-    position: fixed;
-    width: 50px;
-    height: 110px;             /* zelfde hoogte als de balk */
-    top: auto;
+  .sponsorCol::before,
+  .sponsorCol::after {
+    top: 0;
     bottom: 0;
-    z-index: 999;
+    width: 20px;
+    height: 100%;
   }
 
-  .sponsorSidebar::before {
+  .sponsorCol::before {
     left: 0;
-    background: linear-gradient(to right,
+    background: linear-gradient(
+      to right,
       rgba(0,0,0,1) 0%,
-      rgba(0,0,0,0) 100%);
+      rgba(0,0,0,0) 100%
+    );
   }
 
-  .sponsorSidebar::after {
+  .sponsorCol::after {
     right: 0;
-    background: linear-gradient(to left,
+    /* mag ook sterker starten als je wil: maak eerste 40% opaque zoals op desktop */
+    background: linear-gradient(
+      to left,
       rgba(0,0,0,1) 0%,
-      rgba(0,0,0,0) 100%);
+      rgba(0,0,0,0) 100%
+    );
   }
 }
 
