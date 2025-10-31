@@ -72,39 +72,54 @@ function crossfadeToCurrent(){
 
   const pre=new Image();
   pre.src=photo.url;
-  pre.onload=()=>{
-    hideLoader();
-    const incoming=createLayeredImgElement();
-    incoming.src=pre.src;
-    incoming.style.opacity="0";
+pre.onload = () => {
+  hideLoader();
 
-    // Voorbereiden per fotostijl
-    if(FOTO_ANIMATIE==="fade-zoom"){ incoming.classList.add("slide-incoming","fade-zoom"); }
-    else if(FOTO_ANIMATIE==="kenburns"){ incoming.classList.add("slide-incoming","kenburns"); }
-    else if(FOTO_ANIMATIE==="slide"){ incoming.classList.add("slide-incoming","slide-from-right"); }
+  const incoming = createLayeredImgElement();
+  incoming.src = pre.src;
 
-    containerEl.appendChild(incoming);
+  // --- FOTO_ANIMATIE voorbereiding ---
+  if (FOTO_ANIMATIE === "kenburns") {
+    // beginstand gelijk aan keyframes 0%
+    incoming.style.transform = "scale(1.03) translate(0px, 0px)";
+    incoming.style.transformOrigin = "50% 50%";
+    incoming.style.willChange = "transform";
+    // optioneel: duur afstemmen op je kijktijd
+    incoming.style.setProperty("--kb-duration", Math.max(DISPLAY_TIME, 6000) + "ms");
+  } else if (FOTO_ANIMATIE === "fade-zoom") {
+    incoming.classList.add("slide-incoming", "fade-zoom");
+  } else if (FOTO_ANIMATIE === "slide") {
+    incoming.classList.add("slide-incoming", "slide-from-right");
+  }
 
-    // Uitgaand effect bij 'slide'
-    if(currentImgEl && FOTO_ANIMATIE==="slide"){
-      currentImgEl.classList.add("slide-outgoing","slide-to-left");
-    }
+  containerEl.appendChild(incoming);
 
-    requestAnimationFrame(()=>{ requestAnimationFrame(()=>{
+  // Forceer layout, dan pas inkomende effecten activeren
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      if (FOTO_ANIMATIE === "kenburns") {
+        incoming.classList.add("kenburns");
+      }
       // Fade-in
-      incoming.style.opacity="1";
-      // Reset transforms voor bepaalde stijlen om mooie animatie te krijgen
-      if(FOTO_ANIMATIE==="fade-zoom"){ incoming.style.transform="scale(1.00)"; }
-      if(currentImgEl){ currentImgEl.style.opacity="0"; }
-    });});
+      incoming.style.opacity = "1";
+      if (FOTO_ANIMATIE === "fade-zoom") {
+        // rustig terug naar 1.00
+        incoming.style.transform = "scale(1.00)";
+      }
+      if (currentImgEl) currentImgEl.style.opacity = "0";
+      if (FOTO_ANIMATIE === "slide" && currentImgEl) {
+        currentImgEl.classList.add("slide-outgoing", "slide-to-left");
+      }
+    });
+  });
 
-    setTimeout(()=>{
-      if(currentImgEl) currentImgEl.remove();
-      currentImgEl = incoming;
-      // verwijder hulp-classes
-      incoming.classList.remove("slide-incoming","fade-zoom","kenburns","slide-from-right");
-    }, FADE_MS);
-  };
+  setTimeout(() => {
+    if (currentImgEl) currentImgEl.remove();
+    currentImgEl = incoming;
+    // opruimen
+    incoming.classList.remove("slide-incoming","fade-zoom","slide-from-right","kenburns");
+  }, FADE_MS);
+};
   pre.onerror=()=>{ currentIndex=(currentIndex+1)%slideshowImages.length; crossfadeToCurrent(); };
 }
 function nextImage(){
