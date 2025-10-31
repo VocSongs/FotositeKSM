@@ -8,37 +8,32 @@
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-
-  <!-- LOADER: verschijnt tot de eerste foto is geladen -->
-  <div id="loader">
-    <img src="logoKSM.gif" alt="Krom & Stijf Millen" />
-    <div class="loaderText">Even laden…</div>
-  </div>
-
   <!-- Sponsor sidebar -->
   <aside id="sponsorSidebar" class="sponsorSidebar">
-    <!-- Bovenaan: afbeelding i.p.v. tekst -->
-    <img src="26.jpg" alt="sponsors" class="sponsorLogoTop" />
-    <!-- Onder de afbeelding: enkel 'Laatste update: hh:mm' -->
+    <img src="26.jpg" alt="Sponsors" class="sponsorLogoTop" />
     <div class="lastRefreshUnder" id="lastRefresh">Laatste update: --:--</div>
-
     <div id="sponsorCol" class="sponsorCol"></div>
   </aside>
 
-  <!-- Slideshow area (JS plaatst hier de crossfade-lagen) -->
+  <!-- Slideshow area -->
   <div class="slideshow"></div>
 
-  <!-- Footer overlay (groter gemaakt; aanpassen via CSS-variabelen) -->
+  <!-- Footer overlay -->
   <div class="footerOverlay">
     <div class="sponsorLine">
       INTERNATIONAL FOOTBALL HAPPENING 2026 - KROM & STIJF MILLEN - FOOTBALL, BEER AND FRIENDS
     </div>
   </div>
 
-  <!-- Placeholder als er (tijdelijk) geen foto's zijn -->
+  <!-- Geen foto's bericht -->
   <div class="noPhotosMsg" id="noPhotosMsg">
-    Momenteel geen foto's om te tonen.<br />
-    (Kom straks terug 😉)
+    Momenteel geen foto's om te tonen.<br />(Kom straks terug 😉)
+  </div>
+
+  <!-- Loader -->
+  <div id="loader">
+    <img src="logoKSM.gif" alt="Krom & Stijf Millen" class="loaderLogo">
+    <div class="loaderText">Even laden…</div>
   </div>
 
   <script src="slideshow.js"></script>
