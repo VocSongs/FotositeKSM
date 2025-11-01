@@ -263,3 +263,26 @@ html, body {
   /* schaduw op de afgeronde vorm zelf */
   box-shadow: 0 6px 16px rgba(0,0,0,.35);
 }
+/* === HARD CLIP & AFRONDING VOOR SPONSORTEGELS === */
+.sponsorItem {
+  position: relative;
+  border-radius: 12px !important;
+  overflow: visible !important;
+  box-shadow: none !important;
+}
+
+/* Binnenlaag voor correcte clipping */
+.sponsorItem .sponsorFill {
+  position: absolute;
+  inset: 0;
+  border-radius: 12px;
+  overflow: hidden;
+
+  /* Zichtbare afbeelding */
+  background-repeat: no-repeat;
+  background-position: center center;
+  background-size: contain;
+  background-color: transparent;
+
+  /* Echte afgeronde clip in hardwareversnelling */
+  -webkit-clip-path
