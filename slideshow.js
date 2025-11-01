@@ -55,6 +55,16 @@ function shuffleArray(a){ const arr=[...a]; for(let i=arr.length-1;i>0;i--){cons
 function filterRecentLivePhotos(files){ const now=Date.now(), maxAge=LIVE_MAX_AGE_HOURS*3600000; return files.filter(f=>now-new Date(f.createdTime).getTime()<=maxAge); }
 function buildSlideshowList(top, live){ return shuffleArray([...live,...top]); }
 
+function createSponsorTile(url){
+  const item = document.createElement("div");
+  item.className = "sponsorItem";
+  const fill = document.createElement("div");
+  fill.className = "sponsorFill";
+  if (url) fill.style.backgroundImage = `url("${url}")`;
+  item.appendChild(fill);
+  return item;
+}
+
 /***** SLIDESHOW *****/
 function createLayeredImgElement(){ const el=document.createElement("img"); el.className="slideImage"; el.style.opacity="0"; return el; }
 function hideLoader(){ if(loaderHidden) return; const loader=document.getElementById("loader"); if(loader) loader.classList.add("fadeOut"); loaderHidden=true; }
