@@ -3,7 +3,7 @@
   --sidebar-w: min(20vw, 320px);
 
   /* Sponsor lay-out */
-  --sponsor-gap: 6px;
+  --sponsor-gap: 2px;
   --sponsor-pad: 18px;
   --radius: 12px;
 
@@ -286,5 +286,6 @@ html, body {
 
   /* Echte afgeronde clip in hardwareversnelling */
   -webkit-clip-path
+
 
 
