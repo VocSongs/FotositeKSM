@@ -472,3 +472,18 @@ body {
     mask-image: none !important;
   }
 }
+/* Ronde hoeken en background rendering voor sponsor-tegels */
+@media (min-width: 901px){
+  .sponsorItem{
+    border-radius: 12px !important;
+    overflow: hidden !important;
+    box-shadow: 0 8px 22px rgba(0,0,0,.35);
+    background-color: transparent;
+    background-repeat: no-repeat;
+    background-position: center center;
+    background-size: contain;   /* logo volledig zichtbaar zonder snijden */
+  }
+
+  /* Voor de zekerheid: eventuele <img> binnenin verbergen op desktop */
+  .sponsorItem > img{ display:none !important; }
+}
