@@ -43,7 +43,15 @@ async function fetchFolderImages(folderId, isSponsor=false){
     url:`https://drive.google.com/thumbnail?id=${f.id}&sz=w${width}`
   }));
 }
-
+function createSponsorTile(url){
+  const item = document.createElement("div");
+  item.className = "sponsorItem";
+  const fill = document.createElement("div");
+  fill.className = "sponsorFill";
+  if (url) fill.style.backgroundImage = `url("${url}")`;
+  item.appendChild(fill);
+  return item;
+}
 function filterRecentLivePhotos(files){
   const now=Date.now(), maxAge=LIVE_MAX_AGE_HOURS*3600000;
   return files.filter(f=>now - new Date(f.createdTime).getTime() <= maxAge);
@@ -180,18 +188,13 @@ function renderSponsorColumn(){
     const list = sponsorImages.length ? sponsorImages : Array(NUM_SPONSORS_VISIBLE).fill(null);
 
     // twee keer achter elkaar voor naadloos loopen
-    for(let k=0;k<2;k++){
-      list.forEach(file=>{
-        const item=document.createElement("div");
-        item.className="sponsorItem";
-        if(file && file.url){
-          item.style.backgroundImage = `url("${file.url}")`;
-        } else {
-          item.style.backgroundImage = "none";
-        }
-        track.appendChild(item);
-      });
-    }
+for(let k=0;k<2;k++){
+  list.forEach(file=>{
+    const url = file && file.url ? file.url : null;
+    const item = createSponsorTile(url);
+    track.appendChild(item);
+  });
+}
 
     sponsorColEl.scrollTop = 0;
 
@@ -215,12 +218,9 @@ function renderSponsorColumn(){
 
   if(!list.length){
     // lege placeholders
-    for(let i=0;i<NUM_SPONSORS_VISIBLE;i++){
-      const ph=document.createElement("div");
-      ph.className="sponsorItem";
-      ph.style.backgroundImage = "none";
-      sponsorColEl.appendChild(ph);
-    }
+for(let i=0;i<NUM_SPONSORS_VISIBLE;i++){
+  sponsorColEl.appendChild(createSponsorTile(null));
+}
     return;
   }
 
