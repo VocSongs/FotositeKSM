@@ -235,3 +235,31 @@ html, body {
   box-shadow: 0 6px 16px rgba(0,0,0,.35);
 }
 
+/* --- Forceer afgeronde hoeken via inner layer --- */
+.sponsorItem{
+  position: relative;
+  /* de tegel zelf hoeft geen shadow meer; dat zetten we op de fill */
+  box-shadow: none !important;
+  border-radius: 12px !important;
+  overflow: visible; /* de fill klipt zelf */
+}
+
+.sponsorItem .sponsorFill{
+  position: absolute;
+  inset: 0;
+  border-radius: 12px;
+  overflow: hidden;
+
+  /* logo-weergave */
+  background-repeat: no-repeat;
+  background-position: center center;
+  background-size: contain;
+  background-color: transparent;
+
+  /* echte, harde clip – werkt in Chrome/Edge/Firefox/Safari */
+  -webkit-clip-path: inset(0 round 12px);
+  clip-path: inset(0 round 12px);
+
+  /* schaduw op de afgeronde vorm zelf */
+  box-shadow: 0 6px 16px rgba(0,0,0,.35);
+}
