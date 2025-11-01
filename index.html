@@ -1,84 +1,57 @@
 <!DOCTYPE html>
 <html lang="nl">
 <head>
-  <meta charset="utf-8" />
+  <meta charset="UTF-8" />
   <meta http-equiv="Cache-Control" content="no-store" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>HAPPENING 2026 – KSM Millen</title>
-  <meta name="description" content="International Football Happening 2026 – Krom & Stijf Millen. Live fotoslideshow en sponsorgalerij." />
-  <meta name="theme-color" content="#000000" />
-
-  <!-- App manifest (PWA) -->
-  <link rel="manifest" href="manifest.webmanifest" />
-
-  <!-- Styles -->
-  <link rel="preload" as="style" href="style.css" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HAPPENING 2026 KSM </title>
   <link rel="stylesheet" href="style.css" />
-
-  <!-- (Kleine perf-boost voor thumbnails) -->
-  <link rel="preconnect" href="https://drive.google.com" />
-  <link rel="preconnect" href="https://www.googleapis.com" />
+  <link rel="manifest" href="manifest.webmanifest">
+  <meta name="theme-color" content="#000000">
 </head>
 <body>
-  <!-- ===== DESKTOP: sponsor-zijbalk | MOBIEL: verborgen via CSS ===== -->
-  <aside id="sponsorSidebar" class="sponsorSidebar" aria-label="Sponsors zijbalk">
-    <!-- Bovenste sponsorbeeld (zelfde maat als tiles via CSS) -->
-    <img src="26.jpg" alt="Onze sponsors" class="sponsorLogoTop" loading="eager" decoding="async" />
-
-    <!-- Dynamische sponsor-tiles -->
-    <div id="sponsorCol" class="sponsorCol" aria-label="Sponsorlogo's"></div>
-
-    <!-- Laatste update (staat visueel onderaan, over de sponsors) -->
-    <div class="lastRefreshUnder" id="lastRefresh" aria-live="polite">Last update: --:--</div>
+  <!-- Sponsor sidebar (desktop) / onderbalk (mobiel) -->
+  <aside id="sponsorSidebar" class="sponsorSidebar">
+    <img src="26.jpg" alt="Sponsors" class="sponsorLogoTop" />
+    <div class="lastRefreshUnder" id="lastRefresh">Last update: --:--</div>
+    <div id="sponsorCol" class="sponsorCol" aria-label="Sponsors"></div>
   </aside>
 
-  <!-- ===== SLIDESHOW ===== -->
-  <main class="slideshow" aria-label="Fotoslideshow" role="main"></main>
+  <!-- Slideshow area -->
+  <div class="slideshow" aria-label="Slideshow"></div>
 
-  <!-- ===== FOOTER OVERLAY ===== -->
-  <footer class="footerOverlay" aria-label="Footer">
+  <!-- Footer overlay -->
+  <div class="footerOverlay">
     <div class="sponsorLine">
-      INTERNATIONAL FOOTBALL HAPPENING 2026 — KROM &amp; STIJF MILLEN — FOOTBALL, BEER AND FRIENDS
+      INTERNATIONAL FOOTBALL HAPPENING 2026 - KROM & STIJF MILLEN - FOOTBALL, BEER AND FRIENDS
     </div>
-  </footer>
-
-  <!-- ===== GEEN FOTO’S BERICHT ===== -->
-  <div class="noPhotosMsg" id="noPhotosMsg" aria-live="polite" hidden>
-    Momenteel geen foto’s om te tonen.<br />(Kom straks terug 😉)
   </div>
 
-  <!-- ===== LOADER: bedekt enkel fotoveld, niet de sponsorbalk ===== -->
+  <!-- Geen foto's bericht -->
+  <div class="noPhotosMsg" id="noPhotosMsg">
+    Momenteel geen foto's om te tonen.<br />(Kom straks terug 😉)
+  </div>
+
+  <!-- Loader: staat ALLEEN in fotoveld, nooit over de sponsors -->
   <div id="loader" aria-live="polite" aria-busy="true">
-    <img src="logoKSM.png" alt="Krom &amp; Stijf Millen" class="loaderLogo" loading="eager" decoding="async" />
-    <div class="loaderText">Even geduld. We laden snel alle foto’s in…</div>
+    <img src="logoKSM.png" alt="Krom & Stijf Millen" class="loaderLogo">
+    <div class="loaderText">Even geduld. We laden snel alle foto's in…</div>
   </div>
 
-  <!-- Alleen zichtbaar op mobiel (via CSS) -->
-  <img src="logoKSM.png" alt="KSM Millen" class="mobileBrandLogo" loading="lazy" decoding="async" />
-
-  <!-- ===== Scripts ===== -->
-  <script defer src="slideshow.js"></script>
+  <script src="slideshow.js"></script>
   <script>
-    // Service Worker (PWA) – pas na load registreren
-    window.addEventListener('load', () => {
-      if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('./service-worker.js').catch(()=>{});
-      }
-    });
-
-    // Toon de "geen foto's" melding netjes i.p.v. display-jump:
-    // (JS verbergt/onthult via CSS opacity; hidden voorkomt FOUC)
-    document.getElementById('noPhotosMsg')?.removeAttribute('hidden');
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('./service-worker.js').catch(()=>{});
+    }
   </script>
 
-  <noscript>
-    <style>
-      #loader{ display:none !important; }
-      .noPhotosMsg{ opacity:1 !important; }
-    </style>
-    <div style="position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:#000;color:#fff;z-index:99999;text-align:center;padding:1rem;">
-      Deze pagina vereist JavaScript om foto’s en sponsorlogo’s te tonen.
-    </div>
-  </noscript>
+ <!-- Alleen zichtbaar op mobiel -->
+<img src="logoKSM.png" alt="KSM Millen" class="mobileBrandLogo" />
+  
 </body>
 </html>
+
+
+
+
+
