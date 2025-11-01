@@ -4,7 +4,7 @@
   --sponsor-gap: 18px;  /* iets meer ruimte tussen sponsors */
   --sponsor-pad: 18px;
 
-  --footer-font-size: 1rem;
+  --footer-font-size: 2rem;
   --footer-pad-y: 0.7rem;
   --footer-pad-x: 1.2rem;
   --slide-shift: 40px;
@@ -157,11 +157,11 @@ html, body { height: 100%; margin: 0; background: #000; color: #fff; font-family
   left: 12px;
   right: 12px;
   bottom: 8px;
-  font-size: .82rem;
+  font-size: 1.0rem;
   color: #fff;
   text-align: center;
   opacity: .95;
-  text-shadow: 0 0 8px rgba(0,0,0,.8);
+  text-shadow: 0 0 6px rgba(0,0,0,.8);
 }
 
 /* Loader */
@@ -208,3 +208,4 @@ html, body { height: 100%; margin: 0; background: #000; color: #fff; font-family
 
 /* Desktop: mobiel logo verbergen */
 .mobileBrandLogo { display: none !important; }
+
