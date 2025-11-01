@@ -3,7 +3,7 @@
    ========================================================= */
 :root{
   /* Sidebar neemt 20% van schermbreedte, maar nooit breder dan 320px */
-  --sidebar-w: min(20vw, 320px);
+  --sidebar-w: min(20vw, 620px);
   --sponsor-gap: 14px;
   --sponsor-pad: 16px;
 
@@ -291,5 +291,6 @@ body{
 @media (min-width: 901px){
   .mobileBrandLogo{ display:none !important; }
 }
+
 
 
