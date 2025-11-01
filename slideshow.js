@@ -1,359 +1,406 @@
-/***** INSTELLINGEN *****/
-const API_KEY           = "AIzaSyCcCnm--0E_87Jl0_oHpGA6q7h5_ZoOong";
-const LIVE_FOLDER_ID    = "1DPRvYwG-nluiePp3ZRuCFcseze5kAHp4";
-const TOP_FOLDER_ID     = "1N8wfqj7BFtx-jAYj0qM8-uqJVbblWXw3";
-const SPONSOR_FOLDER_ID = "18RJ4L_e30JlxDUcG945kWpcafy28KFIO";
 
-/* Kies je animaties hier */
-const FOTO_ANIMATIE    = "kenburns";      // "fade" | "fade-zoom" | "slide" | "kenburns"
-const SPONSOR_ANIMATIE = "smooth-scroll";  // "slide-up" | "smooth-scroll" | "fade" | "glow"
+/***** INSTELLINGEN DIE JE ZELF KAN AANPASSEN *********************************
 
-const IS_MOBILE             = window.matchMedia("(max-width: 900px)").matches;
-const LIVE_MAX_AGE_HOURS    = 2;
-const DISPLAY_TIME          = 7000;                     // >6s oogt mooier voor Ken Burns
-const REFRESH_INTERVAL      = (IS_MOBILE ? 90 : 45) * 60000;
-const FADE_MS               = 1000;
-const NUM_SPONSORS_VISIBLE  = 4;
-const SPONSOR_REFRESH_INTERVAL = 5 * 60 * 1000;
+Kies je animatiestijl door één van onderstaande opties te zetten.
+Beschikbare waarden:
 
-const PHOTO_THUMB_WIDTH   = IS_MOBILE ? 1200 : 2000;
-const SPONSOR_THUMB_WIDTH = IS_MOBILE ?  600 :  800;
+  FOTO_ANIM_MODE:
+    - 'fade'          (enkel crossfade – huidig)
+    - 'fade-zoom'     (fade + subtiele zoom-in)
+    - 'slide'         (horizontale slide-transitie)
+    - 'kenburns'      (langzaam pannen/zoomen binnen het beeld)
 
-/***** VARIABELEN *****/
-let slideshowImages = [];
-let sponsorImages   = [];
+  SPONSOR_ANIM_MODE:
+    - 'slide-up'      (bij elke fotowissel schuift de kolom 1 item omhoog – huidig idee)
+    - 'smooth-scroll' (continue vloeiende scroll omhoog)
+    - 'fade'          (bij verversen/rotatie fade-in/out)
+    - 'glow'          (bij wissel krijgt het bovenste logo kort een highlight-glow)
+
+******************************************************************************/
+
+// ▼▼▼ Pas hier je keuzes aan ▼▼▼
+const FOTO_ANIM_MODE     = 'kenburns';        // 'fade' | 'fade-zoom' | 'slide' | 'kenburns'
+const SPONSOR_ANIM_MODE  = 'smooth-scroll';    // 'slide-up' | 'smooth-scroll' | 'fade' | 'glow'
+
+// Bestaande waarden bewaard:
+const API_KEY            = "AIzaSyCcCnm--0E_87Jl0_oHpGA6q7h5_ZoOong";
+const LIVE_FOLDER_ID     = "1DPRvYwG-nluiePp3ZRuCFcseze5kAHp4";
+const TOP_FOLDER_ID      = "1N8wfqj7BFtx-jAYj0qM8-uqJVbblWXw3";
+const SPONSOR_FOLDER_ID  = "18RJ4L_e30JlxDUcG945kWpcafy28KFIO";
+
+// Foto's
+const LIVE_MAX_AGE_HOURS = 2;             // toon live-foto's jonger dan X uur
+const DISPLAY_TIME       = 5000;          // tijd dat 1 foto zichtbaar is (ms)
+const REFRESH_INTERVAL   = 30* 60 * 1000; // hoe vaak Drive opnieuw bevragen (ms)
+const FADE_MS            = 1000;          // basis crossfade-duur (ms)
+
+// Sponsors
+const NUM_SPONSORS_VISIBLE     = 4;       // 4 logo's zichtbaar (bijpassende CSS aanwezig)
+const SPONSOR_REFRESH_INTERVAL = 5 * 60 * 1000; // elke 5 min lijst verversen
+
+// Thumbnail kwaliteit (Drive maakt zelf de schaal)
+const PHOTO_THUMB_WIDTH   = 3000;
+const SPONSOR_THUMB_WIDTH = 800;
+/***** EINDE INSTELLINGEN *****************************************************/
+
+let slideshowImages = []; // {id,name,createdTime,url}
+let sponsorImages   = []; // idem
 let currentIndex    = 0;
 
-let containerEl, lastRefreshEl, noPhotosEl, sponsorColEl, currentImgEl;
-let slideTimer, refreshTimer, sponsorTimer;
-let loaderHidden = false;
-let smoothScrollTimer = null;
+let containerEl     = null;
+let lastRefreshEl   = null;
+let noPhotosEl      = null;
+let sponsorColEl    = null;
 
-/***** DRIVE HELPERS *****/
-async function fetchFolderImages(folderId, isSponsor=false){
-  const q   = encodeURIComponent(`'${folderId}' in parents and trashed=false and mimeType contains 'image/'`);
-  const url = `https://www.googleapis.com/drive/v3/files?q=${q}&orderBy=createdTime desc&fields=files(id,name,createdTime,mimeType)&pageSize=200&key=${API_KEY}`;
+let currentImgEl    = null;   // zichtbaar beeld
+let slideTimer      = null;
+let refreshTimer    = null;
+let sponsorTimer    = null;
+
+/** ---------- HULPFUNCTIES DRIVE ---------- **/
+
+// Haal *lijst* van files op via Drive API (auth via API key). We tonen ze via
+// de publieke thumbnail endpoint, die *zonder login* werkt.
+async function fetchFolderImages(folderId, isSponsor = false) {
+  const q = encodeURIComponent(
+    `'${folderId}' in parents and trashed = false and mimeType contains 'image/'`
+  );
+
+  const fields = encodeURIComponent(
+    "files(id,name,createdTime,mimeType),nextPageToken"
+  );
+
+  const url = `https://www.googleapis.com/drive/v3/files?q=${q}&orderBy=createdTime desc&fields=${fields}&pageSize=200&key=${API_KEY}`;
+
   const res = await fetch(url);
-  if(!res.ok){ console.error("Drive API error:", res.status, res.statusText); return []; }
+  if (!res.ok) {
+    console.error("Drive API error for folder", folderId, res.status, res.statusText);
+    return [];
+  }
+
   const data = await res.json();
   const width = isSponsor ? SPONSOR_THUMB_WIDTH : PHOTO_THUMB_WIDTH;
-  return (data.files||[]).map(f=>({
-    id:f.id, name:f.name, createdTime:f.createdTime,
-    // thumbnail end-point is snel en cache-vriendelijk
-    url:`https://drive.google.com/thumbnail?id=${f.id}&sz=w${width}`
+
+  // Gebruik Drive-thumbnail i.p.v. media endpoint -> werkt anoniem
+  return (data.files || []).map((f) => ({
+    id: f.id,
+    name: f.name,
+    createdTime: f.createdTime,
+    url: `https://drive.google.com/thumbnail?id=${f.id}&sz=w${width}`,
   }));
 }
-function createSponsorTile(url){
-  const item = document.createElement("div");
-  item.className = "sponsorItem";
-  const fill = document.createElement("div");
-  fill.className = "sponsorFill";
-  if (url) fill.style.backgroundImage = `url("${url}")`;
-  item.appendChild(fill);
-  return item;
-}
-function filterRecentLivePhotos(files){
-  const now=Date.now(), maxAge=LIVE_MAX_AGE_HOURS*3600000;
-  return files.filter(f=>now - new Date(f.createdTime).getTime() <= maxAge);
-}
-function shuffleArray(a){
-  const arr=[...a];
-  for(let i=arr.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [arr[i],arr[j]]=[arr[j],arr[i]]; }
-  return arr;
-}
-function buildSlideshowList(top,live){ return shuffleArray([...live,...top]); }
 
-/***** SLIDESHOW + EFFECTEN *****/
-function createLayeredImgElement(){
-  const el=document.createElement("img");
-  el.className="slideImage";
-  el.style.opacity="0";
+function filterRecentLivePhotos(files) {
+  const now = Date.now();
+  const maxAgeMs = LIVE_MAX_AGE_HOURS * 60 * 60 * 1000;
+  return files.filter((f) => now - new Date(f.createdTime).getTime() <= maxAgeMs);
+}
+
+function shuffleArray(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function buildSlideshowList(topFiles, liveFilesRecent) {
+  return shuffleArray([...liveFilesRecent, ...topFiles]);
+}
+
+/** ---------- FOTO ANIMATIES ---------- **/
+
+// Maak een <img>-laag die we kunnen animeren
+function createLayeredImgElement() {
+  const el = document.createElement("img");
+  el.className = "slideImage";
+  el.style.position = "absolute";
+  el.style.inset = "0";
+  el.style.margin = "auto";
+  el.style.maxWidth = "calc(100vw - var(--sidebar-w))";
+  el.style.maxHeight = "100vh";
+  el.style.objectFit = "contain";
+  el.style.backgroundColor = "#000";
+  el.style.borderRadius = "12px";
+  el.style.boxShadow = "0 20px 60px rgba(0,0,0,0.8)";
+  el.style.opacity = "0";
+  el.alt = "live foto";
+  el.referrerPolicy = "no-referrer";
   return el;
 }
-function hideLoader(){
-  if(loaderHidden) return;
-  const loader=document.getElementById("loader");
-  if(loader) loader.classList.add("fadeOut");
-  loaderHidden = true;
+
+function applyPhotoEnterState(imgEl) {
+  imgEl.classList.remove("anim-fade","anim-fadezoom","anim-slide","anim-kenburns");
+  switch (FOTO_ANIM_MODE) {
+    case 'fade-zoom':
+      imgEl.classList.add("anim-fadezoom");
+      break;
+    case 'slide':
+      imgEl.classList.add("anim-slide");
+      break;
+    case 'kenburns':
+      imgEl.classList.add("anim-kenburns");
+      break;
+    case 'fade':
+    default:
+      imgEl.classList.add("anim-fade");
+  }
 }
 
-function crossfadeToCurrent(){
-  if(!slideshowImages.length){
-    if(currentImgEl){ currentImgEl.remove(); currentImgEl=null; }
-    if(noPhotosEl) noPhotosEl.style.opacity=1;
+function clearPhotoAnim(imgEl) {
+  if (!imgEl) return;
+  imgEl.classList.remove("anim-fade","anim-fadezoom","anim-slide","anim-kenburns");
+  // Reset transforms/opacities via inline style if needed
+  imgEl.style.transform = "";
+}
+
+// Preload + transitie naar currentIndex
+function transitionToCurrent() {
+  if (!slideshowImages.length) {
+    if (currentImgEl) { currentImgEl.remove(); currentImgEl = null; }
+    noPhotosEl.style.opacity = 1;
     return;
   }
-  if(noPhotosEl) noPhotosEl.style.opacity=0;
+  noPhotosEl.style.opacity = 0;
 
-  const photo=slideshowImages[currentIndex];
-  const pre=new Image();
-  pre.src=photo.url;
+  const photo = slideshowImages[currentIndex];
+  const preloader = new Image();
+  preloader.referrerPolicy = "no-referrer";
+  preloader.src = photo.url;
 
-  pre.onload=()=>{
-    hideLoader();
+  preloader.onload = () => {
+    const nextImg = createLayeredImgElement();
+    nextImg.src = preloader.src;
+    applyPhotoEnterState(nextImg);
+    containerEl.appendChild(nextImg);
 
-    const incoming=createLayeredImgElement();
-    incoming.src=pre.src;
+    // Force layout & start animatie
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        nextImg.style.opacity = "1";
 
-    // FOTO-EFFECT setup vóór in DOM plaatsen
-    if(FOTO_ANIMATIE==="kenburns"){
-      // beginstand exact gelijk aan keyframes 0%
-      incoming.style.transform       = "scale(1.03) translate(-12px, -8px)";
-      incoming.style.transformOrigin = "50% 50%";
-      incoming.style.willChange      = "transform";
-      incoming.style.setProperty("--kb-duration", Math.max(DISPLAY_TIME, 6000) + "ms");
-    } else if(FOTO_ANIMATIE==="fade-zoom"){
-      incoming.classList.add("slide-incoming","fade-zoom");
-    } else if(FOTO_ANIMATIE==="slide"){
-      incoming.classList.add("slide-incoming","slide-from-right");
-    }
+        // Verwijder animatie op de oude
+        if (currentImgEl) {
+          if (FOTO_ANIM_MODE === 'slide') {
+            currentImgEl.style.opacity = "0";
+            currentImgEl.style.transform = "translateX(-6%)";
+          } else {
+            currentImgEl.style.opacity = "0";
+          }
+        }
+      });
+    });
 
-    containerEl.appendChild(incoming);
-
-    requestAnimationFrame(()=>{ requestAnimationFrame(()=>{
-      if(FOTO_ANIMATIE==="kenburns"){ incoming.classList.add("kenburns"); }
-      incoming.style.opacity="1";
-      if(FOTO_ANIMATIE==="fade-zoom"){ incoming.style.transform="scale(1.00)"; }
-      if(currentImgEl){ currentImgEl.style.opacity="0"; }
-      if(FOTO_ANIMATIE==="slide" && currentImgEl){
-        currentImgEl.classList.add("slide-outgoing","slide-to-left");
-      }
-    });});
-
-    setTimeout(()=>{
-      if(currentImgEl) currentImgEl.remove();
-      currentImgEl = incoming;
-      incoming.classList.remove("slide-incoming","fade-zoom","slide-from-right");
-    }, FADE_MS);
+    // Na de fade duratie de oude verwijderen
+    setTimeout(() => {
+      if (currentImgEl) currentImgEl.remove();
+      currentImgEl = nextImg;
+    }, FADE_MS + 50);
   };
 
-  pre.onerror=()=>{
-    // sla over en probeer volgende
-    currentIndex=(currentIndex+1)%slideshowImages.length;
-    crossfadeToCurrent();
+  preloader.onerror = () => {
+    console.warn("Kon foto niet laden, sla over:", photo.url);
+    currentIndex = (currentIndex + 1) % slideshowImages.length;
+    transitionToCurrent();
   };
 }
 
-function nextImage(){
-  if(!slideshowImages.length) return;
-  currentIndex=(currentIndex+1)%slideshowImages.length;
-  applySponsorSwitchEffect();
-  crossfadeToCurrent();
-}
+function nextImage() {
+  if (!slideshowImages.length) return;
+  currentIndex = (currentIndex + 1) % slideshowImages.length;
 
-/***** SPONSOR HELPERS *****/
-async function refreshSponsorsFromDrive(){
-  if(!SPONSOR_FOLDER_ID || SPONSOR_FOLDER_ID.includes("HIER_DE_SPONSOR_MAP_ID")){
-    sponsorImages=[]; renderSponsorColumn(); return;
+  // Bij elke fotowissel: sponsor-animatie
+  if (SPONSOR_ANIM_MODE !== 'smooth-scroll') {
+    rotateSponsorsOnce();
   }
-  const files=await fetchFolderImages(SPONSOR_FOLDER_ID,true);
-  if(files.length) sponsorImages=shuffleArray(files);
-  renderSponsorColumn();
+  transitionToCurrent();
 }
 
-/* Lees CSS-variabele --slot-h (px) of meet tegelhoogte als fallback */
-function getTileHeightPx(){
-  const ss = document.querySelector('.sponsorSidebar');
-  if(ss){
-    const cssH = getComputedStyle(ss).getPropertyValue('--slot-h').trim();
-    if(cssH && cssH.endsWith('px')){
-      const n = parseFloat(cssH);
-      if(!isNaN(n) && n>0) return n;
-    }
+/** ---------- SPONSORS ---------- **/
+
+async function refreshSponsorsFromDrive() {
+  if (!SPONSOR_FOLDER_ID || SPONSOR_FOLDER_ID.includes("HIER_DE_SPONSOR_MAP_ID")) {
+    sponsorImages = [];
+    renderSponsorColumn();
+    return;
   }
-  const first = document.querySelector('.sponsorItem');
-  if(first){
-    const r = first.getBoundingClientRect();
-    if(r.height>0) return r.height;
+  try {
+    const files = await fetchFolderImages(SPONSOR_FOLDER_ID, true);
+    if (files.length) sponsorImages = shuffleArray(files);
+    renderSponsorColumn();
+  } catch (e) {
+    console.error("Fout bij ophalen sponsors:", e);
   }
-  return 160; // veilige default
 }
 
-/***** SPONSOR RENDERING *****/
-function renderSponsorColumn(){
-  if(!sponsorColEl) return;
+function renderSponsorColumn() {
+  if (!sponsorColEl) return;
+  sponsorColEl.innerHTML = "";
 
-  // SMOOTH SCROLL (desktop): maak een track met dubbele lijst
-  if(SPONSOR_ANIMATIE==="smooth-scroll" && !IS_MOBILE){
-    if(smoothScrollTimer){ clearInterval(smoothScrollTimer); smoothScrollTimer=null; }
+  // Smooth scroll: bouw dubbele lijst voor naadloos loop
+  if (SPONSOR_ANIM_MODE === 'smooth-scroll') {
+    // Viewport blijft staan; we bewegen een interne 'track' zodat de headerafbeelding (26.jpg) niet overlapt.
+    sponsorColEl.className = "sponsorCol smoothScroll";
+    sponsorColEl.innerHTML = "";
+    const track = document.createElement("div");
+    track.className = "sponsorTrack";
+    sponsorColEl.appendChild(track)
 
-    sponsorColEl.innerHTML="";
-    const track=document.createElement("div");
-    track.className="sponsorTrack";
-    track.style.display="flex";
-    track.style.flexDirection="column";
-    track.style.gap="var(--sponsor-gap)";
-    sponsorColEl.appendChild(track);
-
-    const list = sponsorImages.length ? sponsorImages : Array(NUM_SPONSORS_VISIBLE).fill(null);
-
-    // twee keer achter elkaar voor naadloos loopen
-for(let k=0;k<2;k++){
-  list.forEach(file=>{
-    const url = file && file.url ? file.url : null;
-    const item = createSponsorTile(url);
-    track.appendChild(item);
-  });
-}
-
-    sponsorColEl.scrollTop = 0;
-
-    // vloeiend laten lopen
-    smoothScrollTimer = setInterval(()=>{
-      sponsorColEl.scrollTop += 1;
-      // half van de track is één "lijst"
-      if(sponsorColEl.scrollTop >= (track.scrollHeight / 2)){
-        sponsorColEl.scrollTop = 0;
+    // Helper om items te bouwen
+    const pushItems = (startIndex=0, count=NUM_SPONSORS_VISIBLE*6) => {
+      for (let i=0; i<count; i++) {
+        const idx = (startIndex + i) % Math.max(1, sponsorImages.length);
+        const file = sponsorImages[idx] || {};
+        const item = document.createElement("div");
+        item.className = "sponsorItem";
+        const img = document.createElement("img");
+        img.alt = "sponsor logo";
+        img.referrerPolicy = "no-referrer";
+        img.src = file.url || "";
+        item.appendChild(img);
+        track.appendChild(item);
       }
-    }, 30);
+    };
 
+    // Als er geen beelden zijn, vul met placeholders zodat de layout klopt
+    if (!sponsorImages.length) {
+      pushItems(0, NUM_SPONSORS_VISIBLE*6);
+    } else {
+      // Bouw minstens 2× de lijst voor naadloos loopen
+      const loops = 3; // ruim voldoende voor hoogtes en gap
+      for (let l=0; l<loops; l++) pushItems(l*NUM_SPONSORS_VISIBLE);
+    }
+
+    return;
+    sponsorColEl.className = "sponsorCol smoothScroll";
+    const build = (startIndex=0) => {
+      for (let i=0; i<NUM_SPONSORS_VISIBLE * 4; i++){ // langere band
+        const idx = (startIndex + i) % sponsorImages.length;
+        const file = sponsorImages[idx] || {};
+        const item = document.createElement("div");
+        item.className = "sponsorItem";
+        const img = document.createElement("img");
+        img.alt = "sponsor logo";
+        img.referrerPolicy = "no-referrer";
+        img.src = file.url || "";
+        item.appendChild(img);
+        sponsorColEl.appendChild(item);
+      }
+    };
+    if (!sponsorImages.length) {
+      // placeholders
+      build(0);
+    } else {
+      build(0);
+      build(NUM_SPONSORS_VISIBLE); // duplicaat erachter
+    }
     return;
   }
 
-  // ANDERE MODES (slide-up / fade / glow)
-  if(smoothScrollTimer){ clearInterval(smoothScrollTimer); smoothScrollTimer=null; }
-
-  sponsorColEl.innerHTML="";
-  const list = sponsorImages.length ? sponsorImages : [];
-
-  if(!list.length){
-    // lege placeholders
-for(let i=0;i<NUM_SPONSORS_VISIBLE;i++){
-  sponsorColEl.appendChild(createSponsorTile(null));
-}
+  // Andere modes: toon exact NUM_SPONSORS_VISIBLE items
+  sponsorColEl.className = "sponsorCol";
+  if (!sponsorImages.length) {
+    for (let i=0; i<NUM_SPONSORS_VISIBLE; i++){
+      const ph = document.createElement("div");
+      ph.className = "sponsorItem";
+      sponsorColEl.appendChild(ph);
+    }
     return;
   }
 
-  for(let i=0;i<NUM_SPONSORS_VISIBLE;i++){
-    const file=list[i%list.length];
-    const item=document.createElement("div");
-    item.className="sponsorItem";
-    item.style.backgroundImage = `url("${file.url}")`; // <<< background-tile
+  for (let i=0; i<NUM_SPONSORS_VISIBLE; i++){
+    const idx = i % sponsorImages.length;
+    const file = sponsorImages[idx];
+
+    const item = document.createElement("div");
+    item.className = "sponsorItem";
+
+    const img = document.createElement("img");
+    img.alt = "sponsor logo";
+    img.referrerPolicy = "no-referrer";
+    img.src = file.url;
+
+    item.appendChild(img);
     sponsorColEl.appendChild(item);
   }
+
+  // Trigger optionele effecten
+  if (SPONSOR_ANIM_MODE === 'fade') {
+    sponsorColEl.classList.remove('fadeChange');
+    // reflow
+    void sponsorColEl.offsetWidth;
+    sponsorColEl.classList.add('fadeChange');
+  } else if (SPONSOR_ANIM_MODE === 'glow') {
+    const first = sponsorColEl.querySelector('.sponsorItem');
+    if (first) {
+      first.classList.add('glowPulse');
+      setTimeout(()=> first.classList.remove('glowPulse'), 1200);
+    }
+  }
 }
 
-/* Roteer array één stap (bovenste naar onder) */
-function rotateSponsorsOnce(){
-  if(!sponsorImages.length) return;
-  const first=sponsorImages.shift();
+// schuif 1 naar boven (datastructuur) + visuele animatieklasse
+function rotateSponsorsOnce() {
+  if (!sponsorImages.length) return;
+  const first = sponsorImages.shift();
   sponsorImages.push(first);
-}
 
-/* Sponsor-switch effect aanroepen bij elke fotowissel */
-function applySponsorSwitchEffect(){
-  if(!sponsorImages.length || !sponsorColEl) return;
-
-  switch(SPONSOR_ANIMATIE){
-    case "slide-up": {
-      // Visueel 1 tegel omhoog schuiven
-      const gapPx = parseFloat(getComputedStyle(sponsorColEl).gap || 0) || 0;
-      const h = getTileHeightPx() + gapPx;
-
-      sponsorColEl.style.transition = 'transform 600ms ease';
-      sponsorColEl.style.transform  = `translateY(-${h}px)`;
-
-      setTimeout(()=>{
-        sponsorColEl.style.transition = 'none';
-        sponsorColEl.style.transform  = 'translateY(0)';
-
-        rotateSponsorsOnce();
-        renderSponsorColumn();
-
-        // reflow zodat volgende transition pakt
-        void sponsorColEl.offsetHeight;
-      }, 650);
-      break;
-    }
-
-    case "fade": {
-      sponsorColEl.classList.add("fade-anim");
-      setTimeout(()=>{
-        rotateSponsorsOnce();
-        renderSponsorColumn();
-        sponsorColEl.classList.add("show");
-        setTimeout(()=>{
-          sponsorColEl.classList.remove("fade-anim","show");
-        }, 520);
-      }, 20);
-      break;
-    }
-
-    case "glow": {
-      rotateSponsorsOnce();
+  if (SPONSOR_ANIM_MODE === 'slide-up') {
+    // Visueel: korte translateY animatie
+    sponsorColEl.classList.add('slideOnce');
+    // Na animatie DOM updaten, dan klasse weer verwijderen
+    setTimeout(() => {
       renderSponsorColumn();
-      const firstItem = sponsorColEl.querySelector(".sponsorItem");
-      if(firstItem){
-        firstItem.classList.add("glow");
-        setTimeout(()=> firstItem.classList.remove("glow"), 650);
-      }
-      break;
-    }
-
-    case "smooth-scroll":
-      // loopt continu; geen discrete switch nodig
-      break;
-  }
-}
-
-/***** REFRESH *****/
-async function refreshFromDrive(){
-  const [top,live]=await Promise.all([
-    fetchFolderImages(TOP_FOLDER_ID,false),
-    fetchFolderImages(LIVE_FOLDER_ID,false)
-  ]);
-  const liveRecent=filterRecentLivePhotos(live);
-  slideshowImages=buildSlideshowList(top,liveRecent);
-
-  if(currentIndex>=slideshowImages.length) currentIndex=0;
-
-  const now=new Date();
-  if(lastRefreshEl){
-    lastRefreshEl.textContent="Last update: "+
-      now.toLocaleTimeString("nl-BE",{hour:"2-digit",minute:"2-digit"});
-  }
-
-  crossfadeToCurrent();
-
-  // sponsors bij verversen: in fade-mode zacht in
-  if(SPONSOR_ANIMATIE==="fade"){
-    sponsorColEl?.classList.add("fade-anim");
-    setTimeout(()=>{
-      renderSponsorColumn();
-      sponsorColEl?.classList.add("show");
-      setTimeout(()=> sponsorColEl?.classList.remove("fade-anim","show"), 520);
-    }, 20);
+      sponsorColEl.classList.remove('slideOnce');
+    }, 450);
   } else {
     renderSponsorColumn();
   }
 }
 
-/***** MOBIEL: zachte auto-scroll sponsors (horizontaal) *****/
-function autoScrollSponsorsMobile(){
-  const el=document.getElementById('sponsorCol');
-  if(!el) return;
-  let dir=1;
-  setInterval(()=>{
-    if(window.innerWidth>900) return;
-    el.scrollBy({ left: dir*2, behavior: 'smooth' });
-    if(el.scrollLeft+el.clientWidth>=el.scrollWidth-2) dir=-1;
-    if(el.scrollLeft<=2) dir=1;
-  }, 40);
+/** ---------- DATA REFRESH ---------- **/
+
+async function refreshFromDrive() {
+  try {
+    const [topFiles, liveFiles] = await Promise.all([
+      fetchFolderImages(TOP_FOLDER_ID, false),
+      fetchFolderImages(LIVE_FOLDER_ID, false),
+    ]);
+
+    const liveRecent = filterRecentLivePhotos(liveFiles);
+    slideshowImages = buildSlideshowList(topFiles, liveRecent);
+
+    if (currentIndex >= slideshowImages.length) currentIndex = 0;
+
+    const now = new Date();
+    lastRefreshEl.textContent =
+      "Laatste update: " +
+      now.toLocaleTimeString("nl-BE", { hour: "2-digit", minute: "2-digit" });
+
+    transitionToCurrent();
+  } catch (err) {
+    console.error("Fout bij refreshFromDrive:", err);
+  }
 }
 
-/***** INIT *****/
-async function init(){
-  containerEl  = document.querySelector(".slideshow");
-  lastRefreshEl= document.getElementById("lastRefresh");
-  noPhotosEl   = document.getElementById("noPhotosMsg");
-  sponsorColEl = document.getElementById("sponsorCol");
+/** ---------- INIT ---------- **/
+
+async function init() {
+  containerEl   = document.querySelector(".slideshow");
+  lastRefreshEl = document.getElementById("lastRefresh");
+  noPhotosEl    = document.getElementById("noPhotosMsg");
+  sponsorColEl  = document.getElementById("sponsorCol");
+
+  containerEl.style.position = "fixed";
+  containerEl.style.overflow = "hidden";
 
   await Promise.all([ refreshFromDrive(), refreshSponsorsFromDrive() ]);
 
-  slideTimer   = setInterval(()=> nextImage(), DISPLAY_TIME);
-  refreshTimer = setInterval(()=> refreshFromDrive(), REFRESH_INTERVAL);
-  sponsorTimer = setInterval(()=> refreshSponsorsFromDrive(), SPONSOR_REFRESH_INTERVAL);
-
-  autoScrollSponsorsMobile();
+  slideTimer   = setInterval(nextImage, DISPLAY_TIME);
+  refreshTimer = setInterval(refreshFromDrive, REFRESH_INTERVAL);
+  sponsorTimer = setInterval(refreshSponsorsFromDrive, SPONSOR_REFRESH_INTERVAL);
 }
+
+// Start
 init();

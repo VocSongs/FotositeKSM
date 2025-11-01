@@ -1,610 +1,274 @@
+
 :root{
-  --sidebar-w: 240px;
+  /* Breedte sponsor kolom en spacing */
+  --sidebar-w: 15vw;
   --sponsor-gap: 14px;
   --sponsor-pad: 16px;
 
   /* Footer makkelijk aanpassen */
-  --footer-font-size: 1.0rem;
-  --footer-pad-y: 0.7rem;
-  --footer-pad-x: 1.2rem;
+  --footer-font-size: 1.rem;   /* ← groter/kleiner maken */
+  --footer-pad-y: 0.7rem;       /* verticale padding */
+  --footer-pad-x: 1.2rem;       /* horizontale padding */
 
-  /* Animatie-variabelen */
-  --slide-shift: 40px;     /* verplaatsing bij foto 'slide' */
-  --glow-time: 600ms;      /* duur sponsor glow */
+  /* Sponsor smooth scroll */
+  --sponsor-scroll-duration: 90s; /* snelheid vloeiende scroll */
 }
 
-/* Basis */
-* { box-sizing: border-box; }
-html, body { height: 100%; }
+/* Basispagina fullscreen zwart */
 body {
-  margin: 0; background: #000; color: #fff;
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+  margin: 0;
+  background: #000;
+  color: #fff;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    Roboto, "Helvetica Neue", Arial, sans-serif;
   overflow: hidden;
+  height: 100vh;
+  width: 100vw;
+  position: relative;
 }
 
-/* Sponsor sidebar (desktop links) */
+/* Sponsor sidebar links */
 .sponsorSidebar{
-  position: fixed; top:0; left:0;
-  width: var(--sidebar-w); height: 100vh;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: var(--sidebar-w);
+  height: 100vh;
+  box-sizing: border-box;
   padding: var(--sponsor-pad);
   background: rgba(0,0,0,0.15);
   backdrop-filter: blur(2px);
-
-  /* 🔴🟡🔴 smalle driedubbele lijn aan de RECHTERkant (enkel randje) */
-  border-right: none;
-  background-image: linear-gradient(
-    to right,
-    transparent calc(100% - 6px),
-    #c00000 calc(100% - 6px),
-    #c00000 calc(100% - 4px),
-    #ffd700 calc(100% - 4px),
-    #ffd700 calc(100% - 2px),
-    #c00000 calc(100% - 2px),
-    #c00000 100%
-  );
-  background-repeat: no-repeat;
-  background-size: 100% 100%;
-
-  display: flex; flex-direction: column; gap: var(--sponsor-gap);
+  border-right: 1px solid rgba(255,255,255,0.12);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sponsor-gap);
   z-index: 10;
 }
 
-/* Desktop: volgorde afdwingen; last update volledig onderaan */
-.sponsorLogoTop { order: 1; border-radius: 12px; }
-.sponsorCol     { order: 2; flex: 1; }
-.lastRefreshUnder{
-  order: 3;
-  position: absolute;
-  left: 12px; right: 12px; bottom: 8px;
-  margin: 0;
-  font-size: .82rem;
-  color: #fff;
-  text-align: center;
+/* Bovenste afbeelding i.p.v. tekst */
+.sponsorLogoTop {
+  width: 100%;
+  aspect-ratio: 1.4 / 1;     /* zelfde verhouding als sponsorlogo�s */
+  object-fit: contain;       /* schaal zonder te vervormen */
   background: transparent;
-  border: 0;
-  opacity: .95;
-  text-shadow: 0 0 8px rgba(0,0,0,.8);
-  pointer-events: none;
+  border-radius: 12px;       /* afgeronde hoeken */
+  display: block;
 }
 
-/* Sponsorlogo's kolom */
+/* 'Laatste update: 10:42' onder de afbeelding */
+.lastRefreshUnder {
+  position: fixed;
+  bottom: 1rem;
+  right: 1.2rem;                 /* altijd rechts in het fotoveld */
+  font-size: 0.7rem;
+  font-weight: 500;
+  opacity: 0.85;
+  color: #fff;
+  background: rgba(0, 0, 0, 0.45);
+  padding: 6px 10px;
+  border-radius: 10px;
+  white-space: nowrap;           /* alles op één regel */
+  z-index: 15;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.4);
+}
+
+/* Kolom met logo’s */
 .sponsorCol{
   display: flex;
   flex-direction: column;
   gap: var(--sponsor-gap);
   overflow: hidden;
-  position: relative;   /* <-- nodig voor de pseudo-elementen */
+  flex: 1;
+  border-right: 0px solid transparent;
 }
 
-/* Enkel de afbeelding, geen kader/achtergrond/schaduw — wel afgerond */
+/* Eén logo-tegel — verhouding 1.4 : 1 (géén kader/achtergrond meer) */
 .sponsorItem{
-  width: 100%; aspect-ratio: 1.4 / 1;
-  display: flex; align-items: center; justify-content: center;
-  background: transparent; border: 0; box-shadow: none;
+  width: 100%;
+  aspect-ratio: 1.4 / 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+  border-radius: 0;
+  transition: opacity .45s ease, transform .45s ease, filter .6s ease;
 }
+
 .sponsorItem img{
   max-width: 100%;
   max-height: 100%;
   object-fit: contain;
-  border-radius: 12px;
+  opacity: 1;
+  border-radius: 12px;   /* ← deze toevoegen */
+  box-shadow: 0 6px 14px rgba(0,0,0,0.4); /* optioneel voor wat diepte */
 }
 
-/* Slideshow rechts */
-.slideshow{
-  position: fixed; top:0; left: var(--sidebar-w); right:0; bottom:0;
-  display:flex; align-items:center; justify-content:center;
-  background:#000; overflow:hidden;
+/* Sponsor animaties -------------------------------------------------------- */
+
+/* 1) slide-up bij één stap rotatie */
+.sponsorCol.slideOnce .sponsorItem{
+  animation: sponsorSlideUp .45s ease both;
 }
 
-/* Belangrijk voor Ken Burns: alleen opacity transition, geen transform */
-.slideImage{
-  position:absolute; inset:0; margin:auto;
-  max-width: calc(100vw - var(--sidebar-w)); max-height: 100vh;
-  object-fit: contain; background:#000; border-radius:12px;
-  box-shadow: 0 20px 60px rgba(0,0,0,0.8);
-  opacity: 0;
-  transition: opacity 1s ease;
-  transform-origin: 50% 50%;
+@keyframes sponsorSlideUp {
+  0%   { transform: translateY(16px); opacity: .75; }
+  100% { transform: translateY(0);    opacity: 1; }
 }
 
-/* Ken Burns – lineair zonder stopmoment */
-.slideImage.kenburns{
+/* 2) smooth-scroll (continue) */
+.sponsorCol.smoothScroll{
+  position: relative;
+  overflow: hidden; /* clip binnen de kolom */
+}
+
+.sponsorCol.smoothScroll .sponsorTrack{
+  display: flex;
+  flex-direction: column;
+  gap: var(--sponsor-gap);
   will-change: transform;
-  animation: kenburns var(--kb-duration, 8000ms) linear forwards;
-}
-@keyframes kenburns{
-  0%   { transform: scale(1.03) translate(-12px, -8px); }
-  100% { transform: scale(1.09) translate( 12px,  8px); }
+  animation: sponsorSmooth var(--sponsor-scroll-duration) linear infinite;
 }
 
-/* Extra foto-effecten */
-.slide-incoming.fade-zoom { transform: scale(1.03); }
-.slide-incoming.slide-from-right { transform: translateX(var(--slide-shift)); }
-.slide-outgoing.slide-to-left    { transform: translateX(calc(var(--slide-shift) * -1)); opacity: 0; }
+@keyframes sponsorSmooth {
+  0%   { transform: translateY(0); }
+  100% { transform: translateY(-50%); } /* we renderen de lijst meervoudig voor een naadloze loop */
+}
 
-/* Footer */
-.footerOverlay{ position:fixed; bottom:1rem; left:calc(var(--sidebar-w)); right:0; text-align:center; z-index:5; }
-.sponsorLine{
-  display:inline-block; background: rgba(0,0,0,0.5);
+/* 3) fade-in/out bij wissel */
+.sponsorCol.fadeChange .sponsorItem{
+  animation: sponsorFade .6s ease both;
+}
+@keyframes sponsorFade {
+  0% { opacity: 0; transform: translateY(8px); }
+  100%{ opacity: 1; transform: translateY(0);  }
+}
+
+/* 4) highlight-glow op eerste item */
+.sponsorItem.glowPulse{
+  filter: drop-shadow(0 0 0px rgba(255,255,255,0))
+          drop-shadow(0 0 0px rgba(255,255,255,0));
+  animation: glowPulse 1.2s ease-in-out;
+}
+@keyframes glowPulse {
+  0%   { filter: drop-shadow(0 0 0px rgba(255,255,255,0)); }
+  50%  { filter: drop-shadow(0 0 12px rgba(255,255,255,0.65)); }
+  100% { filter: drop-shadow(0 0 0px rgba(255,255,255,0)); }
+}
+
+/* Container voor de foto (neemt resterende breedte) */
+.slideshow {
+  position: fixed;
+  top: 0;
+  left: var(--sidebar-w);
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #000;
+  overflow: hidden;
+}
+
+/* Crossfade-lagen (JS zet positionering inline) */
+.slideImage {
+  max-width: calc(100vw - var(--sidebar-w));
+  max-height: 100vh;
+  object-fit: contain;
+  background-color: #000;
+  border-radius: 12px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8);
+}
+
+/* Foto-animaties ----------------------------------------------------------- */
+
+/* Basis fade (huidig) */
+.slideImage.anim-fade{
+  transition: opacity var(--fade-ms, 1000ms) ease;
+}
+
+/* Fade + subtiele zoom-in */
+.slideImage.anim-fadezoom{
+  transform: scale(1.04);
+  transition: opacity var(--fade-ms, 1000ms) ease,
+              transform calc(var(--fade-ms, 1000ms) + 400ms) ease;
+}
+.slideImage.anim-fadezoom[style*="opacity: 1"]{
+  transform: scale(1);
+}
+
+/* Slide transitie (nieuw beeld schuift in, oud schuift licht uit) */
+.slideImage.anim-slide{
+  transform: translateX(8%);
+  transition: opacity var(--fade-ms, 1000ms) ease,
+              transform var(--fade-ms, 1000ms) ease;
+}
+.slideImage.anim-slide[style*="opacity: 1"]{
+  transform: translateX(0%);
+}
+
+/* Ken Burns: langzaam pannen/zoomen terwijl het beeld in fade't */
+.slideImage.anim-kenburns{
+  animation: kenBurnsMove 12s ease-in-out forwards;
+  transition: opacity var(--fade-ms, 1000ms) ease;
+}
+@keyframes kenBurnsMove {
+  0%   { transform: scale(1.05) translate(-1%, -1%); }
+  50%  { transform: scale(1.12) translate(1%,  1%);  }
+  100% { transform: scale(1.18) translate(-1%, 0%);  }
+}
+
+/* Footer overlay — groter gemaakt en makkelijk aanpasbaar via variabelen */
+.footerOverlay {
+  position: fixed;
+  bottom: 1rem;
+  left: calc(var(--sidebar-w) + 0px);
+  right: 0;
+  text-align: center;
+  pointer-events: none;
+  z-index: 5;
+}
+
+.sponsorLine {
+  display: inline-block;
+  background: rgba(0, 0, 0, 0.5);
   padding: var(--footer-pad-y) var(--footer-pad-x);
   font-size: var(--footer-font-size);
-  border-radius: 14px; color:#fff; font-weight:600; letter-spacing:.02em;
-  box-shadow: 0 15px 40px rgba(0,0,0,0.6);
-  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 14px;
+  color: #fff;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.15);
 }
 
-/* Geen foto's bericht */
-.noPhotosMsg{
-  position: fixed; inset: 0 0 0 var(--sidebar-w);
-  color:#888; font-size:1.2rem; text-align:center;
-  display:flex; align-items:center; justify-content:center;
-  background: radial-gradient(circle at 60% 30%, rgba(255,255,255,0.08) 0%, rgba(0,0,0,0) 60%);
-  opacity:0; transition: opacity .5s ease; padding:2rem;
-}
-
-/* Loader – ALLEEN boven fotoveld; bedekt sponsors NIET */
-#loader{
-  position: fixed; top:0; left: var(--sidebar-w); right:0; bottom:0;
-  display:flex; flex-direction:column; align-items:center; justify-content:center;
-  background:#000; z-index: 9999; transition: opacity .8s ease;
-}
-.loaderLogo{ max-width: 28%; height:auto; opacity:.9; }
-.loaderText{ margin-top:1rem; font-size:1.1rem; color:#fff; text-shadow:0 0 8px rgba(255,255,255,.6); animation:pulseText 2s ease-in-out infinite; opacity:.95; }
-@keyframes pulseText{ 0%,100%{text-shadow:0 0 6px rgba(255,255,255,.2);opacity:.7;} 50%{text-shadow:0 0 20px rgba(255,255,255,.8);opacity:1;} }
-#loader.fadeOut{ opacity:0; pointer-events:none; }
-
-/* ====== MOBIEL / TABLET (≤900px): full-screen foto, geen sponsors ====== */
-@media (max-width: 900px) {
-  /* Footertekst schaalbaar (0.75 = 75% van desktop) */
-  :root{
-    --sidebar-w: 0px;                 /* geen zijbalk op mobiel */
-    --mobile-footer-scale: 0.75;      /* pas aan naar wens (0.6–0.9) */
-  }
-
-  /* Sponsorbalk volledig weg op mobiel */
-  .sponsorSidebar{
-    display: none !important;
-  }
-
-  /* Slideshow over het hele scherm */
-  .slideshow{
-    left: 0; right: 0; top: 0; bottom: 0;   /* full bleed */
-  }
-  .slideImage{
-    max-width: 100vw;
-    max-height: 100vh;                       /* geen zwarte strook meer in landscape */
-  }
-
-  /* Loader dezelfde ruimte als de slideshow gebruiken */
-  #loader{
-    left: 0; right: 0; top: 0; bottom: 0;
-  }
-
-  /* Footertekst kleiner en iets hoger van de rand */
-  .sponsorLine{
-    font-size: calc(var(--footer-font-size) * var(--mobile-footer-scale)) !important;
-  }
-  .footerOverlay{
-    left: 0; right: 0; bottom: 12px;        /* iets vrij van de onderrand */
-  }
-
-  /* Mobiel top-logo – klein, gecentreerd bovenaan */
-  .mobileBrandLogo{
-    position: fixed;
-    top: 10px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: min(28vw, 160px);                 /* schaalt mee met scherm, max 160px */
-    height: auto;
-    z-index: 6;
-    opacity: .95;
-    filter: drop-shadow(0 6px 18px rgba(0,0,0,.6));
-    display: block;
-    pointer-events: none;                     /* nooit klikbaar */
-  }
-}
-
-/* Verberg het mobiele logo standaard (alleen in de @media wordt hij getoond) */
-.mobileBrandLogo{ display: none; }
-
-/* ====== EFFECTEN (sponsors) ====== */
-.sponsorCol.fade-anim { transition: opacity .5s ease; opacity: 0; }
-.sponsorCol.fade-anim.show { opacity: 1; }
-.sponsorItem.glow { box-shadow: 0 0 0 0 rgba(255,255,255,0); animation: sponsorGlow var(--glow-time) ease; border-radius: 12px; }
-@keyframes sponsorGlow {
-  0% { box-shadow: 0 0 0 0 rgba(255,255,255,0); }
-  50%{ box-shadow: 0 0 16px 4px rgba(255,255,255,.85); }
-  100%{ box-shadow: 0 0 0 0 rgba(255,255,255,0); }
-}
-
-/* ====== FADES (met CSS mask, scrolt NIET mee) ====== */
-
-/* Tweakbaar: pas de fade-breedte aan (px) */
-:root{
-  --fade-edge: 25px; /* bv. 20–30px */
-}
-
-/* Desktop: verticale fade boven & onder op de kolom met sponsors */
-.sponsorCol{
-  /* bestaande regels mogen blijven staan */
-  -webkit-mask-image: linear-gradient(
-    to bottom,
-    rgba(0,0,0,0) 0,
-    rgba(0,0,0,1) var(--fade-edge),
-    rgba(0,0,0,1) calc(100% - var(--fade-edge)),
-    rgba(0,0,0,0) 100%
+/* Placeholder tekst als er geen foto's zijn */
+.noPhotosMsg {
+  position: fixed;
+  inset: 0 0 0 var(--sidebar-w);
+  color: #888;
+  font-size: 1.2rem;
+  line-height: 1.6rem;
+  text-align: center;
+  font-weight: 400;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(
+    circle at 60% 30%,
+    rgba(255, 255, 255, 0.08) 0%,
+    rgba(0, 0, 0, 0) 60%
   );
-  mask-image: linear-gradient(
-    to bottom,
-    rgba(0,0,0,0) 0,
-    rgba(0,0,0,1) var(--fade-edge),
-    rgba(0,0,0,1) calc(100% - var(--fade-edge)),
-    rgba(0,0,0,0) 100%
-  );
+  opacity: 0;
+  transition: opacity 0.5s ease;
+  padding: 2rem;
+  text-shadow: 0 2px 6px rgba(0, 0, 0, 0.8);
 }
 
-/* Mobiel: horizontale fade links & rechts op de rij met sponsors */
-@media (max-width: 900px){
-  .sponsorCol{
-    -webkit-mask-image: linear-gradient(
-      to right,
-      rgba(0,0,0,0) 0,
-      rgba(0,0,0,1) var(--fade-edge),
-      rgba(0,0,0,1) calc(100% - var(--fade-edge)),
-      rgba(0,0,0,0) 100%
-    );
-    mask-image: linear-gradient(
-      to right,
-      rgba(0,0,0,0) 0,
-      rgba(0,0,0,1) var(--fade-edge),
-      rgba(0,0,0,1) calc(100% - var(--fade-edge)),
-      rgba(0,0,0,0) 100%
-    );
-  }
-}
-
-/* Mobiel: fade links & rechts op de horizontale logorij */
+/* Klein scherm: sidebar verbergen (optioneel) */
 @media (max-width: 900px) {
-  .sponsorCol::before,
-  .sponsorCol::after {
-    top: 0;
-    bottom: 0;
-    width: 20px;
-    height: 100%;
-  }
-
-  .sponsorCol::before {
-    left: 0;
-    background: linear-gradient(
-      to right,
-      rgba(0,0,0,1) 0%,
-      rgba(0,0,0,0) 100%
-    );
-  }
-
-  .sponsorCol::after {
-    right: 0;
-    /* mag ook sterker starten als je wil: maak eerste 40% opaque zoals op desktop */
-    background: linear-gradient(
-      to left,
-      rgba(0,0,0,1) 0%,
-      rgba(0,0,0,0) 100%
-    );
-  }
-}
-
-/* Mobiel: fade links & rechts */
-@media (max-width: 900px) {
-  .sponsorSidebar::before,
-  .sponsorSidebar::after {
-    width: 20px;
-    height: 100%;
-    top: 0;
-    background: none;
-  }
-
-  .sponsorSidebar::before {
-    left: 0;
-    background: linear-gradient(to right, rgba(0,0,0,1) 0%, rgba(0,0,0,0) 100%);
-  }
-
-  .sponsorSidebar::after {
-    right: 0;
-    background: linear-gradient(to left, rgba(0,0,0,1) 0%, rgba(0,0,0,0) 100%);
-  }
-}
-/* Standaard: nooit tonen op desktop */
-.mobileBrandLogo{
-  display: none !important;
-  position: fixed;           /* alvast juiste props, worden op mobiel gebruikt */
-  top: 10px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: min(28vw, 160px);
-  height: auto;
-  z-index: 6;
-  opacity: .95;
-  pointer-events: none;
-  filter: drop-shadow(0 6px 18px rgba(0,0,0,.6));
-}
-
-/* Alleen op mobiel zichtbaar */
-@media (max-width: 900px){
-  .mobileBrandLogo{
-    display: block !important;
-  }
-}
-
-/* Extra vangnet (forceer verbergen op grotere schermen) */
-@media (min-width: 901px){
-  .mobileBrandLogo{
-    display: none !important;
-  }
-}
-/* ===== DESKTOP: uniforme maten voor bovenlogo en sponsor-tiles ===== */
-@media (min-width: 901px) {
-  /* Bereken 1 keer de binnenbreedte & vaste hoogte van een sponsor-tegel */
-  .sponsorSidebar{
-    /* binnenbreedte = sidebar minus padding links+rechts */
-    --slot-w: calc(var(--sidebar-w) - (2 * var(--sponsor-pad)));
-    /* hoogte = breedte / 1.4  (zelfde verhouding als je tiles) */
-    --slot-h: calc(var(--slot-w) / 1.4);
-  }
-
-  /* Bovenste logo exact even groot als de sponsor-tiles */
-  .sponsorLogoTop{
-    width: var(--slot-w);
-    height: var(--slot-h);
-    display: block;              /* voorkomt inline-gap */
-    margin: 0 auto;              /* centreer binnen de sidebar */
-    object-fit: contain;         /* nooit uitsnijden */
-    border-radius: 12px;
-    box-shadow: none;            /* optioneel: consistent met tiles */
-    image-rendering: auto;
-    -webkit-transform: translateZ(0); /* kleine anti-aliasing fix */
-  }
-
-  /* Iedere sponsor-tegel krijgt exact dezelfde box-maten */
-  .sponsorItem{
-    width: var(--slot-w) !important;
-    height: var(--slot-h) !important;
-    margin: 0 auto;              /* centreer */
-    border-radius: 12px;
-    background: transparent;
-    box-shadow: none;
-  }
-
-  /* Afbeelding vult de box, zonder vervormen */
-  .sponsorItem img{
-    width: 100%;
-    height: 100%;
-    display: block;              /* geen baseline-gap */
-    object-fit: contain;
-    border-radius: 12px;
-    image-rendering: auto;
-    -webkit-transform: translateZ(0);
-  }
-}
-/* ===== Herstel afgeronde hoeken voor logo & sponsors ===== */
-@media (min-width: 901px) {
-
-  /* Bovenste logo */
-  .sponsorLogoTop,
-  .sponsorLogoTop img {
-    border-radius: 12px !important;
-    overflow: hidden;
-  }
-
-  /* Elke sponsor-tegel + afbeelding */
-  .sponsorItem,
-  .sponsorItem img {
-    border-radius: 12px !important;
-    overflow: hidden;
-  }
-
-  /* Eventuele schaduw terug subtiel maken (optioneel) */
-  .sponsorItem img,
-  .sponsorLogoTop img {
-    box-shadow: 0 4px 12px rgba(0,0,0,0.35);
-  }
-}
-/* === FORCEER RONDE HOEKEN (desktop) === */
-@media (min-width: 901px){
-  /* Containers krijgen de hoeken + clippen de inhoud */
-  .sponsorLogoTop,
-  .sponsorItem{
-    border-radius: 12px !important;
-    overflow: hidden !important;
-    box-shadow: 0 8px 22px rgba(0,0,0,.35);   /* optioneel: kaartje-effect */
-    background: transparent;
-    /* WebKit fix om overflow: hidden te forceren bij GPU-layers */
-    -webkit-mask-image: -webkit-radial-gradient(white, black);
-  }
-
-  /* Afbeeldingen volgen de hoeken van de container */
-  .sponsorLogoTop > img,
-  .sponsorItem > img{
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
-    display: block;
-    border-radius: inherit !important;  /* neem 12px over */
-    box-shadow: none !important;        /* schaduw staat op container */
-    background: transparent;
-  }
-}
-/* === FORCE ROUNDED CORNERS (desktop) === */
-@media (min-width: 901px){
-
-  /* 1) Container: vaste radius + clip */
-  .sponsorItem,
-  .sponsorLogoTop{
-    border-radius: 12px !important;
-    overflow: hidden !important;                 /* normaal genoeg */
-    background: transparent;
-    box-shadow: 0 8px 22px rgba(0,0,0,.35);
-    /* fallback forceer-clip voor webkit/gpu */
-    -webkit-clip-path: inset(0 round 12px);
-    clip-path: inset(0 round 12px);
-  }
-
-  /* 2) Afbeelding: laat radius erven + extra hard clip (blijft binnen container) */
-  .sponsorItem > img,
-  .sponsorLogoTop > img{
-    display: block;
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
-    border-radius: inherit !important;
-    box-shadow: none !important;
-    background: transparent;
-
-    /* forceer clipping, ook wanneer parent overflow wordt genegeerd */
-    -webkit-clip-path: inset(0 round 12px);
-    clip-path: inset(0 round 12px);
-
-    /* voorkomt anti-aliasing artefacts op sommige GPU combinaties */
-    -webkit-transform: translateZ(0);
-    transform: translateZ(0);
-
-    /* als je ooit masks op img zelf krijgt, zorg dat de hoekmask gelijk loopt */
-    -webkit-mask-image: none !important;
-    mask-image: none !important;
-  }
-}
-/* Ronde hoeken en background rendering voor sponsor-tegels */
-@media (min-width: 901px){
-  .sponsorItem{
-    border-radius: 12px !important;
-    overflow: hidden !important;
-    box-shadow: 0 8px 22px rgba(0,0,0,.35);
-    background-color: transparent;
-    background-repeat: no-repeat;
-    background-position: center center;
-    background-size: contain;   /* logo volledig zichtbaar zonder snijden */
-  }
-
-  /* Voor de zekerheid: eventuele <img> binnenin verbergen op desktop */
-  .sponsorItem > img{ display:none !important; }
-}
-/* ===== DESKTOP FIX: vaste maat + afgeronde hoeken + background rendering ===== */
-@media (min-width: 901px){
-
-  /* 1) Eén keer de tegel-afmetingen afleiden uit je sidebarbreedte */
-  .sponsorSidebar{
-    --slot-w: calc(var(--sidebar-w) - (2 * var(--sponsor-pad))); /* binnenbreedte */
-    --slot-h: calc(var(--slot-w) / 1.4);                         /* hoogte = w / 1.4 */
-  }
-
-  /* 2) Bovenste logo mag dezelfde maat krijgen voor perfecte gelijkheid */
-  .sponsorLogoTop{
-    width: var(--slot-w);
-    height: var(--slot-h);
-    margin: 0 auto;
-    border-radius: 12px;
-    overflow: hidden;
-    display: block;
-  }
-  .sponsorLogoTop > img{
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
-    display: block;
-    border-radius: inherit;
-  }
-
-  /* 3) Elke sponsor-tegel: vaste box + afgeronde hoeken + background-image */
-  .sponsorCol{
-    align-items: center;              /* centreer kolom-inhoud horizontaal */
-  }
-  .sponsorItem{
-    width: var(--slot-w) !important;
-    height: var(--slot-h) !important;
-    flex: 0 0 var(--slot-h);          /* voorkom dat flex de hoogte samendrukt */
-    margin: 0 auto;
-
-    border-radius: 12px !important;
-    overflow: hidden !important;
-    box-shadow: 0 8px 22px rgba(0,0,0,.35);
-
-    background-repeat: no-repeat;
-    background-position: center center;
-    background-size: contain;         /* niet croppen, volledig zichtbaar */
-    background-color: transparent;
-  }
-
-  /* 4) Zorg dat eventuele <img> in een tile op desktop niet interfereert */
-  .sponsorItem > img{
-    display: none !important;
-  }
-}
-/* ===== DESKTOP: sponsor-tegels met echte afgeronde hoeken ===== */
-@media (min-width: 901px){
-  .sponsorItem{
-    /* vaste box-maten staan al, we forceren nu de clip */
-    border-radius: 12px !important;
-    overflow: hidden !important;
-
-    /* background respecteert border-radius, maar clippen we extra hard: */
-    -webkit-clip-path: inset(0 round 12px);
-    clip-path: inset(0 round 12px);
-
-    /* achtergrond netjes binnen de ronde hoeken renderen */
-    background-clip: padding-box;
-    background-repeat: no-repeat;
-    background-position: center center;
-    background-size: contain;
-
-    /* subtiele schaduw rond de afgeronde vorm */
-    box-shadow: 0 8px 22px rgba(0,0,0,.35);
-  }
-
-  /* bovenste logo idem (als <img>) */
-  .sponsorLogoTop{
-    border-radius: 12px !important;
-    overflow: hidden !important;
-    -webkit-clip-path: inset(0 round 12px);
-    clip-path: inset(0 round 12px);
-  }
-  .sponsorLogoTop > img{
-    border-radius: inherit !important;
-    display:block;
-    width:100%; height:100%; object-fit:contain;
-  }
-}
-/* === Rounded corners that always work (desktop) === */
-@media (min-width: 901px){
-  .sponsorItem{
-    position: relative;
-    width: var(--slot-w) !important;
-    height: var(--slot-h) !important;
-    margin: 0 auto;
-    /* Keep tile itself simple; clipping happens on the child */
-  }
-
-  /* New inner layer that we clip */
-  .sponsorItem .sponsorFill{
-    position: absolute;
-    inset: 0;
-    border-radius: 12px;
-    overflow: hidden;
-    background-repeat: no-repeat;
-    background-position: center center;
-    background-size: contain;               /* show full logo, no crop */
-    box-shadow: 0 8px 22px rgba(0,0,0,.35); /* subtle card shadow */
-    /* Extra-hard clipping to survive masks/transforms */
-    -webkit-clip-path: inset(0 round 12px);
-    clip-path: inset(0 round 12px);
-    background-color: transparent;
-  }
-
-  /* Top logo: keep rounded as well */
-  .sponsorLogoTop{
-    border-radius: 12px;
-    overflow: hidden;
-  }
-  .sponsorLogoTop > img{
-    display:block; width:100%; height:100%; object-fit:contain;
-    border-radius: inherit;
-  }
+  .sponsorSidebar { display: none; }
+  .slideshow { left: 0; }
+  .footerOverlay { left: 0; }
 }
