@@ -2,10 +2,10 @@
    VARS
    ========================================================= */
 :root{
-  /* Sidebar (desktop) */
-  --sidebar-w: 240px;
-  --sponsor-pad: 16px;
+  /* Sidebar neemt 20% van schermbreedte, maar nooit breder dan 320px */
+  --sidebar-w: min(20vw, 320px);
   --sponsor-gap: 14px;
+  --sponsor-pad: 16px;
 
   /* Sponsor tiles (ratio 1.4:1 -> hoogte = breedte / 1.4) */
   --tile-radius: 12px;
@@ -175,15 +175,17 @@ body{
 
 /* Foto-layer voor crossfade & effecten */
 .slideImage{
-  position:absolute; inset:0; margin:auto;
-  max-width: calc(100vw - var(--sidebar-w));
-  max-height: 100vh;
+  position:absolute;
+  inset:0;
+  margin:auto;
+  width: calc(100vw - var(--sidebar-w));
+  height: 100vh;
   object-fit: contain;
   background:#000;
-  border-radius: 12px;
+  border-radius:12px;
   box-shadow: 0 20px 60px rgba(0,0,0,0.8);
   opacity: 0;
-  transition: opacity var(--fade-ms)ms ease;
+  transition: opacity 1s ease;
   transform-origin: 50% 50%;
 }
 
@@ -289,4 +291,5 @@ body{
 @media (min-width: 901px){
   .mobileBrandLogo{ display:none !important; }
 }
+
 
