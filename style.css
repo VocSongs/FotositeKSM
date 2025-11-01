@@ -487,3 +487,54 @@ body {
   /* Voor de zekerheid: eventuele <img> binnenin verbergen op desktop */
   .sponsorItem > img{ display:none !important; }
 }
+/* ===== DESKTOP FIX: vaste maat + afgeronde hoeken + background rendering ===== */
+@media (min-width: 901px){
+
+  /* 1) Eén keer de tegel-afmetingen afleiden uit je sidebarbreedte */
+  .sponsorSidebar{
+    --slot-w: calc(var(--sidebar-w) - (2 * var(--sponsor-pad))); /* binnenbreedte */
+    --slot-h: calc(var(--slot-w) / 1.4);                         /* hoogte = w / 1.4 */
+  }
+
+  /* 2) Bovenste logo mag dezelfde maat krijgen voor perfecte gelijkheid */
+  .sponsorLogoTop{
+    width: var(--slot-w);
+    height: var(--slot-h);
+    margin: 0 auto;
+    border-radius: 12px;
+    overflow: hidden;
+    display: block;
+  }
+  .sponsorLogoTop > img{
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    display: block;
+    border-radius: inherit;
+  }
+
+  /* 3) Elke sponsor-tegel: vaste box + afgeronde hoeken + background-image */
+  .sponsorCol{
+    align-items: center;              /* centreer kolom-inhoud horizontaal */
+  }
+  .sponsorItem{
+    width: var(--slot-w) !important;
+    height: var(--slot-h) !important;
+    flex: 0 0 var(--slot-h);          /* voorkom dat flex de hoogte samendrukt */
+    margin: 0 auto;
+
+    border-radius: 12px !important;
+    overflow: hidden !important;
+    box-shadow: 0 8px 22px rgba(0,0,0,.35);
+
+    background-repeat: no-repeat;
+    background-position: center center;
+    background-size: contain;         /* niet croppen, volledig zichtbaar */
+    background-color: transparent;
+  }
+
+  /* 4) Zorg dat eventuele <img> in een tile op desktop niet interfereert */
+  .sponsorItem > img{
+    display: none !important;
+  }
+}
