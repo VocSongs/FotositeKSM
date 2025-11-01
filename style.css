@@ -190,7 +190,7 @@ html, body {
 }
 #loader.fadeOut { opacity: 0; pointer-events: none; }
 .loaderLogo { max-width: 28%; height: auto; opacity: .9; }
-.loaderText { margin-top: 1rem; font-size: 1.1rem; color: #fff; text-shadow: 0 0 8px rgba(255,255,255,.6); }
+.loaderText { margin-top: 1rem; font-size: 1.4rem; color: #fff; text-shadow: 0 0 8px rgba(255,255,255,.6); }
 
 /* === MOBIEL === */
 @media (max-width: 900px){
@@ -217,3 +217,4 @@ html, body {
 }
 /* Desktop: mobiel logo verbergen */
 .mobileBrandLogo{ display:none !important; }
+
