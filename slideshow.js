@@ -156,12 +156,11 @@ function renderSponsorColumn(){
     const list = sponsorImages.length ? sponsorImages : Array(NUM_SPONSORS_VISIBLE).fill(null);
     for(const pass of [0,1]){
       list.forEach(file=>{
-        const item=document.createElement("div"); item.className="sponsorItem";
-        if(file){
-          const img=document.createElement("img"); img.alt="sponsor logo"; img.src=file.url;
-          item.appendChild(img);
-        }
-        track.appendChild(item);
+const item = document.createElement("div");
+item.className = "sponsorItem";
+/* render als achtergrond i.p.v. <img>  */
+item.style.backgroundImage = `url("${file.url}")`;
+sponsorColEl.appendChild(item);
       });
     }
 
