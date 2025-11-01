@@ -169,7 +169,7 @@ html, body {
 .lastRefreshUnder {
   position: absolute;
   left: 12px; right: 12px; bottom: 8px;
-  font-size: 1rem;
+  font-size: 0.8rem;
   color: #fff;
   text-align: center;
   opacity: .95;
@@ -234,3 +234,4 @@ html, body {
   /* Subtiele schaduw */
   box-shadow: 0 6px 16px rgba(0,0,0,.35);
 }
+
