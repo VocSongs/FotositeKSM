@@ -161,20 +161,40 @@ async function refreshSponsorsFromDrive() {
   renderSponsorColumn();
 }
 
-/* Nieuwe smooth scroll via requestAnimationFrame */
-function startSmoothScroll() {
-  if (animationFrameId) cancelAnimationFrame(animationFrameId);
-  const track = sponsorColEl.querySelector(".sponsorTrack");
-  if (!track) return;
+/* Vloeiende scroll met easing */
+let scrollOffset = 0;
+let scrollTarget = 0;
+let lastTime = 0;
+let animationFrameId = null;
+const SCROLL_SPEED = 15; // pixels per seconde
+const SCROLL_EASE = 0.08; // hoe "zacht" de beweging is (0.05–0.15 goed bereik)
 
-  const loop = () => {
-    scrollOffset += scrollSpeed;
-    if (scrollOffset >= track.scrollHeight / 2) scrollOffset = 0;
+function startSmoothScroll(){
+  if(animationFrameId) cancelAnimationFrame(animationFrameId);
+  const track = sponsorColEl.querySelector(".sponsorTrack");
+  if(!track) return;
+
+  function step(timestamp){
+    if(!lastTime) lastTime = timestamp;
+    const delta = (timestamp - lastTime) / 1000;
+    lastTime = timestamp;
+
+    // update doel en vloeiende overgang
+    scrollTarget += SCROLL_SPEED * delta;
+    scrollOffset += (scrollTarget - scrollOffset) * SCROLL_EASE;
+
+    if(scrollOffset >= track.scrollHeight / 2){
+      scrollOffset = 0;
+      scrollTarget = 0;
+    }
+
     sponsorColEl.scrollTop = scrollOffset;
-    animationFrameId = requestAnimationFrame(loop);
-  };
-  loop();
+    animationFrameId = requestAnimationFrame(step);
+  }
+
+  requestAnimationFrame(step);
 }
+
 
 function renderSponsorColumn() {
   if (!sponsorColEl) return;
