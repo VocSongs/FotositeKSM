@@ -4,7 +4,7 @@
   --sponsor-gap: 18px;  /* iets meer ruimte tussen sponsors */
   --sponsor-pad: 18px;
 
-  --footer-font-size: 2rem;
+  --footer-font-size: 4rem;
   --footer-pad-y: 0.7rem;
   --footer-pad-x: 1.2rem;
   --slide-shift: 40px;
@@ -208,4 +208,5 @@ html, body { height: 100%; margin: 0; background: #000; color: #fff; font-family
 
 /* Desktop: mobiel logo verbergen */
 .mobileBrandLogo { display: none !important; }
+
 
