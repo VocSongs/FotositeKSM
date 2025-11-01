@@ -209,4 +209,34 @@ html, body { height: 100%; margin: 0; background: #000; color: #fff; font-family
 /* Desktop: mobiel logo verbergen */
 .mobileBrandLogo { display: none !important; }
 
+/* === Verbeterde sponsorlayout (desktop) === */
+@media (min-width: 901px){
+  /* Iets meer ruimte tussen sponsors */
+  .sponsorCol{
+    gap: 24px !important;
+  }
 
+  /* Sponsors én bovenste logo met echte afgeronde hoeken */
+  .sponsorItem,
+  .sponsorLogoTop{
+    border-radius: 12px !important;
+    overflow: hidden !important;
+    background-clip: padding-box;
+    -webkit-clip-path: inset(0 round 12px);
+    clip-path: inset(0 round 12px);
+    box-shadow: 0 6px 16px rgba(0,0,0,.35);
+  }
+
+  .sponsorItem{
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center center;
+  }
+
+  .sponsorLogoTop{
+    object-fit: contain;
+    display:block;
+    width: 100%;
+    height: auto;
+  }
+}
