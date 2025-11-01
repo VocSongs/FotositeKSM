@@ -55,6 +55,7 @@ function shuffleArray(a){ const arr=[...a]; for(let i=arr.length-1;i>0;i--){cons
 function filterRecentLivePhotos(files){ const now=Date.now(), maxAge=LIVE_MAX_AGE_HOURS*3600000; return files.filter(f=>now-new Date(f.createdTime).getTime()<=maxAge); }
 function buildSlideshowList(top, live){ return shuffleArray([...live,...top]); }
 
+/***** SPONSOR TILE (inner fill voor afgeronde hoeken) *****/
 function createSponsorTile(url){
   const item = document.createElement("div");
   item.className = "sponsorItem";
@@ -159,9 +160,7 @@ function renderSponsorColumn(){
     const list=sponsorImages.length ? sponsorImages : Array(NUM_SPONSORS_VISIBLE).fill(null);
     for(let k=0;k<2;k++){
       list.forEach(file=>{
-        const item=document.createElement("div");
-        item.className="sponsorItem";
-        if(file && file.url) item.style.backgroundImage=`url("${file.url}")`;
+        const item = createSponsorTile(file && file.url ? file.url : null);
         track.appendChild(item);
       });
     }
@@ -172,9 +171,7 @@ function renderSponsorColumn(){
   const list=sponsorImages.length ? sponsorImages : [];
   for(let i=0;i<NUM_SPONSORS_VISIBLE;i++){
     const file=list[i%list.length];
-    const item=document.createElement("div");
-    item.className="sponsorItem";
-    if(file && file.url) item.style.backgroundImage=`url("${file.url}")`;
+    const item = createSponsorTile(file && file.url ? file.url : null);
     sponsorColEl.appendChild(item);
   }
 }
