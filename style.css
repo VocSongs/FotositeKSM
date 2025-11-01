@@ -218,3 +218,19 @@ html, body {
 /* Desktop: mobiel logo verbergen */
 .mobileBrandLogo{ display:none !important; }
 
+/* === Forceer afgeronde hoeken voor sponsor-tegels === */
+.sponsorItem {
+  border-radius: 12px !important;
+  overflow: hidden !important;
+
+  /* Zorg dat de achtergrond meeklipt met de hoeken */
+  -webkit-clip-path: inset(0 round 12px);
+  clip-path: inset(0 round 12px);
+
+  /* Voor extra zekerheid */
+  background-clip: padding-box;
+  background-origin: border-box;
+
+  /* Subtiele schaduw */
+  box-shadow: 0 6px 16px rgba(0,0,0,.35);
+}
