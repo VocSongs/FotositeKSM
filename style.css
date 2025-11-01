@@ -572,3 +572,39 @@ body {
     width:100%; height:100%; object-fit:contain;
   }
 }
+/* === Rounded corners that always work (desktop) === */
+@media (min-width: 901px){
+  .sponsorItem{
+    position: relative;
+    width: var(--slot-w) !important;
+    height: var(--slot-h) !important;
+    margin: 0 auto;
+    /* Keep tile itself simple; clipping happens on the child */
+  }
+
+  /* New inner layer that we clip */
+  .sponsorItem .sponsorFill{
+    position: absolute;
+    inset: 0;
+    border-radius: 12px;
+    overflow: hidden;
+    background-repeat: no-repeat;
+    background-position: center center;
+    background-size: contain;               /* show full logo, no crop */
+    box-shadow: 0 8px 22px rgba(0,0,0,.35); /* subtle card shadow */
+    /* Extra-hard clipping to survive masks/transforms */
+    -webkit-clip-path: inset(0 round 12px);
+    clip-path: inset(0 round 12px);
+    background-color: transparent;
+  }
+
+  /* Top logo: keep rounded as well */
+  .sponsorLogoTop{
+    border-radius: 12px;
+    overflow: hidden;
+  }
+  .sponsorLogoTop > img{
+    display:block; width:100%; height:100%; object-fit:contain;
+    border-radius: inherit;
+  }
+}
