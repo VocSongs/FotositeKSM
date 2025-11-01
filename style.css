@@ -20,7 +20,7 @@
   --slide-shift: 40px;
 
   /* Fades bij sponsorcol */
-  --fade-edge: 25px; /* 20–30px is vaak goed */
+  --fade-edge: 50px; /* 20–30px is vaak goed */
 
   /* Mobile footer schaal tov desktop */
   --mobile-footer-scale: 0.75;
@@ -291,6 +291,7 @@ body{
 @media (min-width: 901px){
   .mobileBrandLogo{ display:none !important; }
 }
+
 
 
 
