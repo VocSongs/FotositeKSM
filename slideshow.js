@@ -20,7 +20,7 @@ const PHOTO_THUMB_WIDTH       = IS_MOBILE ? 1200 : 2000;
 const SPONSOR_THUMB_WIDTH     = IS_MOBILE ? 600  : 800;
 
 /***** VLOEIENDE SCROLL-INSTELLINGEN *****/
-const SCROLL_SPEED_PX_PER_SEC = 30;   // snelheid: 10–20 is ideaal
+const SCROLL_SPEED_PX_PER_SEC = 40;   // snelheid: 10–20 is ideaal
 const SCROLL_EASE_FACTOR      = 0.08; // zachtheid: 0.05–0.15
 
 /***** VARIABELEN *****/
