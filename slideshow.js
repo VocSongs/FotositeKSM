@@ -20,7 +20,7 @@ const PHOTO_THUMB_WIDTH       = IS_MOBILE ? 1200 : 2000;
 const SPONSOR_THUMB_WIDTH     = IS_MOBILE ? 600  : 800;
 
 /***** VLOEIENDE SCROLL-INSTELLINGEN *****/
-const SCROLL_SPEED_PX_PER_SEC = 40;   // snelheid: 10–20 is ideaal
+const SCROLL_SPEED_PX_PER_SEC = 15;   // snelheid: 10–20 is ideaal
 const SCROLL_EASE_FACTOR      = 0.08; // zachtheid: 0.05–0.15
 
 /***** VARIABELEN *****/
@@ -35,6 +35,8 @@ let scrollOffset = 0;
 let scrollTarget = 0;
 let lastTime     = 0;
 let animationFrameId = null;
+let lastScrollTick = performance.now();
+
 
 /***** DRIVE HELPERS *****/
 async function fetchFolderImages(folderId, isSponsor = false) {
@@ -121,28 +123,39 @@ async function refreshSponsorsFromDrive(){
 }
 
 /* Vloeiende scroll met easing */
+
 function startSmoothScroll(){
   if(animationFrameId) cancelAnimationFrame(animationFrameId);
-  const track=sponsorColEl.querySelector(".sponsorTrack");
+  const track = sponsorColEl?.querySelector(".sponsorTrack");
   if(!track) return;
 
-  scrollOffset=0; scrollTarget=0; lastTime=0;
+  scrollOffset = 0;
+  scrollTarget = 0;
+  lastTime     = 0;
 
-  function step(timestamp){
-    if(!lastTime) lastTime=timestamp;
-    const delta=(timestamp-lastTime)/1000;
-    lastTime=timestamp;
+  function step(ts){
+    if(!lastTime) lastTime = ts;
+    const delta = (ts - lastTime) / 1000; // seconden
+    lastTime = ts;
 
     scrollTarget += SCROLL_SPEED_PX_PER_SEC * delta;
     scrollOffset += (scrollTarget - scrollOffset) * SCROLL_EASE_FACTOR;
 
-    if(scrollOffset >= track.scrollHeight/2){ scrollOffset=0; scrollTarget=0; }
+    // loop: reset halverwege de gedupliceerde lijst
+    if(scrollOffset >= track.scrollHeight / 2){
+      scrollOffset = 0;
+      scrollTarget = 0;
+    }
+
     sponsorColEl.scrollTop = scrollOffset;
 
-    animationFrameId=requestAnimationFrame(step);
+    // markeer dat we nog leven
+    lastScrollTick = ts;
+    animationFrameId = requestAnimationFrame(step);
   }
-  requestAnimationFrame(step);
+  animationFrameId = requestAnimationFrame(step);
 }
+
 
 /* Kolom met sponsorafbeeldingen renderen */
 function renderSponsorColumn(){
@@ -210,3 +223,22 @@ async function init(){
   sponsorTimer = setInterval(refreshSponsorsFromDrive, SPONSOR_REFRESH_INTERVAL);
 }
 init();
+
+// Herstart smooth scroll wanneer tab opnieuw zichtbaar wordt
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible' && SPONSOR_ANIMATIE === 'smooth-scroll' && !IS_MOBILE) {
+    startSmoothScroll();
+  }
+});
+
+// Watchdog: controleer elke 2s of de animatie nog loopt; zoniet, herstarten
+setInterval(() => {
+  if (SPONSOR_ANIMATIE !== 'smooth-scroll' || IS_MOBILE) return;
+  const hasTrack = sponsorColEl && sponsorColEl.querySelector('.sponsorTrack');
+  const tooLong  = (performance.now() - lastScrollTick) > 3000; // >3s geen tick
+
+  if (!animationFrameId || !hasTrack || tooLong) {
+    startSmoothScroll();
+  }
+}, 2000);
+
