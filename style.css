@@ -34,6 +34,8 @@ html, body {
 .sponsorLogoTop{
   width:100%; aspect-ratio: 1.4 / 1; object-fit:contain; background:#000; border-radius:var(--radius);
   box-shadow: 0 6px 16px rgba(0,0,0,.35);
+  margin-bottom: 2px;  /* afstand tot eerste sponsorlogo */
+  margin-top: -20px;    /* ↑ verschuif iets hoger */
 }
 .sponsorCol{
   flex:1; position:relative; overflow:hidden; border-radius:var(--radius);
@@ -112,9 +114,9 @@ html, body {
 /* <<< NIEUW: hoeklogo altijd (desktop + mobiel) >>> */
 #cornerBadge{
   position: fixed;
-  bottom: 20px;
-  right: 22px;
-  width: 140px;
+  bottom: 25px;
+  right: 25px;
+  width: 180px;
   height: auto;
   z-index: 30;                 /* boven slideshow en footer */
   opacity: 0.92;
