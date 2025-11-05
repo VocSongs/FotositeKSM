@@ -167,7 +167,7 @@ html, body {
 }
 #loader.fadeOut { opacity: 0; pointer-events: none; }
 .loaderLogo { max-width: 28%; height: auto; opacity: .9; }
-.loaderText { margin-top: 1rem; font-size: 2rem; color: #fff; text-align:center; text-shadow: 0 0 8px rgba(255,255,255,.6); }
+.loaderText { margin-top: 1rem; font-size: 5rem; color: #fff; text-align:center; text-shadow: 0 0 8px rgba(255,255,255,.6); }
 
 /* Fullscreen start-knop in loader */
 .startFsBtn{
