@@ -18,38 +18,9 @@ const SPONSOR_REFRESH_INTERVAL= 5 * 60 * 1000;
 const PHOTO_THUMB_WIDTH       = IS_MOBILE ? 1200 : 2000;
 const SPONSOR_THUMB_WIDTH     = IS_MOBILE ? 600  : 800;
 
-function isFullscreenLike(){
-  // 1) Standaard Fullscreen API
-  if (document.fullscreenElement) return true;
-
-  // 2) Heuristieken voor F11/desktop
-  const iw = window.innerWidth;
-  const ih = window.innerHeight;
-
-  // Gebruik meerdere referenties (sommige browsers vullen er 1 of 2 in)
-  const sw = Math.max(screen.width, screen.availWidth || 0, window.outerWidth || 0);
-  const sh = Math.max(screen.height, screen.availHeight || 0, window.outerHeight || 0);
-
-  // Tolerantie ruim houden (taskbar, titelbalk, scaling, multi-monitor)
-  const T = 120; // px marge
-
-  const widthOK  = Math.abs(sw - iw) <= T || iw >= sw - T;
-  const heightOK = Math.abs(sh - ih) <= T || ih >= sh - T;
-
-  return widthOK && heightOK;
-}
-
-function updateFsHint(){
-  const el = document.getElementById('fsHint');
-  if (!el) return;
-  // toon enkel op desktop, geen smart-tv
-  const show = !IS_MOBILE && !IS_TV && !isFullscreenLike();
-  el.hidden = !show;
-}
-
 // Initialisatie in init()
-window.addEventListener('resize', updateFsHint);
-document.addEventListener('fullscreenchange', updateFsHint);
+
+
 window.addEventListener('keydown', e => {
   if (e.key === 'F11') setTimeout(updateFsHint, 800);
 });
@@ -369,10 +340,16 @@ async function init(){
   sponsorColEl  = document.getElementById("sponsorCol");
   audioBtn      = document.getElementById("audioToggle");
 
-  // Fullscreen-hint setup (géén wireFsHintClose meer nodig)
-  updateFsHint();
-  window.addEventListener('resize', updateFsHint);
-  document.addEventListener('fullscreenchange', updateFsHint);
+  
+  // Fullscreen via loader-knop
+  const fsBtn = document.getElementById('startFsBtn');
+  if (fsBtn){
+    fsBtn.addEventListener('click', async () => {
+      try { await document.documentElement.requestFullscreen(); } catch(e) {}
+      fsBtn.blur();
+    });
+  }
+// Fullscreen-hint setup (géén wireFsHintClose meer nodig)
   window.addEventListener('keydown', e => {
     if (e.key === 'F11') setTimeout(updateFsHint, 800);
   });
