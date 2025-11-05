@@ -50,7 +50,7 @@ html, body {
 .sponsorCol::after { bottom:0; background: linear-gradient(to top,    rgba(0,0,0,0.9), rgba(0,0,0,0)); }
 /* "Last update" */
 .lastRefreshSide{
-  margin-top: 8px; text-align: center; font-size: 0.9rem; opacity: 0.95; color: #fff;
+  margin-top: 8px; text-align: center; font-size: 0.8rem; opacity: 0.95; color: #fff;
   text-shadow: 0 0 6px rgba(0,0,0,.8);
 }
 
