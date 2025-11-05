@@ -163,21 +163,81 @@ async function refreshSponsorsFromDrive(){
   renderSponsorColumn();
 }
 
+// --- NAADLOZE SPONSOR-SCROLL met robuuste fallback (rAF -> setInterval) ---
 function startSmoothScroll(){
-  if(animationFrameId) cancelAnimationFrame(animationFrameId);
+  // Stop vorige engines
+  if (animationFrameId) cancelAnimationFrame(animationFrameId);
+  if (window.__sponsorIntervalId) { clearInterval(window.__sponsorIntervalId); window.__sponsorIntervalId = null; }
+
   const track = sponsorColEl?.querySelector(".sponsorTrack");
-  if(!track) return;
-  let loopH = 0; const measure=()=>loopH=track.scrollHeight/2; measure(); requestAnimationFrame(measure);
-  let last=performance.now();
+  if (!track || !sponsorColEl) return;
+
+  let loopH = 0;
+  const measure = () => { loopH = track.scrollHeight / 2; };
+  measure();
+  requestAnimationFrame(measure);
+
+  let engine = 'raf';          // huidige motor: 'raf' of 'interval'
+  let last = performance.now();
+  let lastScroll = sponsorColEl.scrollTop;
+  let stagnantMs = 0;          // hoe lang zonder beweging
+  const STALL_LIMIT = 600;     // ms zonder beweging voordat we switchen
+
   function step(ts){
-    const dt=(ts-last)/1000; last=ts;
+    const dt = (ts - last) / 1000;
+    last = ts;
+
+    // vooruitgang
     sponsorColEl.scrollTop += SCROLL_SPEED_PX_PER_SEC * dt;
-    if(!loopH) loopH=track.scrollHeight/2;
-    if(loopH && sponsorColEl.scrollTop>=loopH) sponsorColEl.scrollTop-=loopH;
-    lastScrollTick=ts; animationFrameId=requestAnimationFrame(step);
+
+    // meet loophoogte (bij traag ladende images)
+    if (!loopH) loopH = track.scrollHeight / 2;
+
+    // naadloze reset
+    if (loopH && sponsorColEl.scrollTop >= loopH){
+      sponsorColEl.scrollTop -= loopH;
+    }
+
+    // detecteer stilstand
+    if (Math.abs(sponsorColEl.scrollTop - lastScroll) < 0.5) {
+      stagnantMs += (dt * 1000);
+    } else {
+      stagnantMs = 0;
+      lastScroll = sponsorColEl.scrollTop;
+    }
+
+    // als rAF stilvalt -> switch naar interval
+    if (engine === 'raf' && stagnantMs > STALL_LIMIT){
+      engine = 'interval';
+      animationFrameId && cancelAnimationFrame(animationFrameId);
+      animationFrameId = null;
+      // ~60fps interval; geen dt-afhankelijke drift (we gebruiken 16ms stap)
+      window.__sponsorIntervalId = setInterval(()=>{
+        const stepDt = 16 / 1000;
+        sponsorColEl.scrollTop += SCROLL_SPEED_PX_PER_SEC * stepDt;
+        if (!loopH) loopH = track.scrollHeight / 2;
+        if (loopH && sponsorColEl.scrollTop >= loopH){
+          sponsorColEl.scrollTop -= loopH;
+        }
+        lastScrollTick = performance.now();
+      }, 16);
+      return; // stop rAF-loop
+    }
+
+    lastScrollTick = ts;
+    animationFrameId = requestAnimationFrame(step);
   }
-  animationFrameId=requestAnimationFrame(step);
+
+  // start rAF-engine
+  animationFrameId = requestAnimationFrame(step);
+
+  // safety: als track of container opnieuw wordt opgebouwd, herstart
+  setTimeout(()=>{
+    const hasTrack = sponsorColEl && sponsorColEl.querySelector('.sponsorTrack');
+    if (!hasTrack) startSmoothScroll();
+  }, 1200);
 }
+
 
 function renderSponsorColumn(){
   if(!sponsorColEl) return;
