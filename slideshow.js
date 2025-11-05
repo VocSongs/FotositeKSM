@@ -43,19 +43,22 @@ function startImageTimer(){
 
 // Smooth scroll vars
 const SCROLL_SPEED_PX_PER_SEC = 20;
-const SCROLL_EASE_FACTOR      = 0.08; // (niet gebruikt in lineaire variant, mag blijven)
 let animationFrameId = null;
 let lastScrollTick   = performance.now();
 
-// ***** SMART TV DETECTIE & FALLBACK *****
+// ***** SMART TV DETECTIE & FALLBACK (strakker) *****
 function isSmartTV(){
   const ua = navigator.userAgent || "";
-  return /(Web0S|NetCast|Tizen|SmartTV|SamsungBrowser|Android TV|Opera TV)/i.test(ua);
+  // Enkele echte TV-platforms, geen mobile/desktop browsers
+  return /(Web0S|Tizen|NetCast|HbbTV|Android\sTV|AppleTV|Viera|Bravia|TV\sBuild)/i.test(ua);
 }
 const IS_TV = isSmartTV();
-if (IS_TV) {
+// Op echte TV: fallback "static". Anders: altijd smooth.
+if (IS_TV && !/Windows|Macintosh|X11|Linux/i.test(navigator.userAgent)) {
   SPONSOR_ANIMATIE = "static";
   console.log("Smart TV gedetecteerd – sponsor-fallback actief.");
+} else {
+  SPONSOR_ANIMATIE = "smooth-scroll";
 }
 
 // ***** DRIVE HELPERS *****
@@ -252,21 +255,23 @@ function startSmoothScroll(){
   const track = sponsorColEl?.querySelector(".sponsorTrack");
   if (!track) return;
 
-  // hoogte van één set (we renderen 2 identieke sets)
   let loopH = 0;
-  // meet na 1 frame (zeker dat layout/hoogte klopt)
-  requestAnimationFrame(() => { loopH = track.scrollHeight / 2; });
+  // direct meten én nog eens na layout; daarna blijven we meten tot bekend
+  const measure = () => { loopH = track.scrollHeight / 2; };
+  measure();
+  requestAnimationFrame(measure);
 
   let last = performance.now();
-
   function step(ts){
     const dt = (ts - last) / 1000;
     last = ts;
 
-    // lineair schuiven (stabiel op tv's/browsers)
     sponsorColEl.scrollTop += SCROLL_SPEED_PX_PER_SEC * dt;
 
-    // naadloze loop: zodra voorbij 1 set, trek die hoogte eraf
+    // Als loopH (nog) niet bekend is (images laden), blijf 'm proberen te meten
+    if (!loopH) loopH = track.scrollHeight / 2;
+
+    // naadloze reset zodra we voorbij 1 set zijn
     if (loopH && sponsorColEl.scrollTop >= loopH){
       sponsorColEl.scrollTop -= loopH;
     }
@@ -282,12 +287,12 @@ function renderSponsorColumn(){
   if (!sponsorColEl) return;
   sponsorColEl.innerHTML = "";
 
-  if (SPONSOR_ANIMATIE === "smooth-scroll" && !IS_MOBILE){
+  if (SPONSOR_ANIMATIE === "smooth-scroll"){
     const track = document.createElement("div");
     track.className = "sponsorTrack";
     track.style.display = "flex";
     track.style.flexDirection = "column";
-    track.style.gap = "12px"; // iets kleiner = vloeiender
+    track.style.gap = "12px";
     sponsorColEl.appendChild(track);
 
     const list = sponsorImages.length ? sponsorImages : [];
@@ -297,16 +302,25 @@ function renderSponsorColumn(){
         const item = createSponsorTile(file && file.url ? file.url : null);
         frag.appendChild(item);
       });
-      // 2 identieke sets voor naadloos loopen
+
+      // Minstens 2 sets
       track.appendChild(frag.cloneNode(true));
       track.appendChild(frag.cloneNode(true));
+
+      // Extra sets bijplakken totdat scroll zichtbaar is (veiligheidsmarge)
+      const minHeight = sponsorColEl.clientHeight * 2;
+      let safety = 0;
+      while (track.scrollHeight < minHeight && safety < 10){
+        track.appendChild(frag.cloneNode(true));
+        safety++;
+      }
     }
 
     startSmoothScroll();
     return;
   }
 
-  // Fallback: statisch (TV of animatie uit)
+  // Fallback: statisch
   const list = sponsorImages.length ? sponsorImages : [];
   const take = Math.max(NUM_SPONSORS_VISIBLE, list.length);
   for (let i = 0; i < take; i++){
@@ -369,7 +383,7 @@ async function init(){
 
   sponsorTimer = setInterval(refreshSponsorsFromDrive, SPONSOR_REFRESH_INTERVAL);
 
-  if (SPONSOR_ANIMATIE === 'smooth-scroll' && !IS_MOBILE){
+  if (SPONSOR_ANIMATIE === 'smooth-scroll'){
     document.addEventListener('visibilitychange', () => {
       if (document.visibilityState === 'visible') startSmoothScroll();
     });
