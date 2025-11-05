@@ -116,7 +116,7 @@ html, body {
   position: fixed;
   bottom: 25px;
   right: 25px;
-  width: 220px;
+  width: 260px;
   height: auto;
   z-index: 30;                 /* boven slideshow en footer */
   opacity: 0.92;
