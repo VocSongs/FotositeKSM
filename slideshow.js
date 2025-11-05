@@ -19,12 +19,24 @@ const PHOTO_THUMB_WIDTH       = IS_MOBILE ? 1200 : 2000;
 const SPONSOR_THUMB_WIDTH     = IS_MOBILE ? 600  : 800;
 
 function isFullscreenLike(){
-  // Detecteer F11 of werkelijk fullscreen
-  const dw = window.innerWidth, dh = window.innerHeight;
-  const sw = screen.availWidth || screen.width;
-  const sh = screen.availHeight || screen.height;
-  const near = (a,b)=> Math.abs(a-b) <= 40;
-  return document.fullscreenElement || (near(dw, sw) && near(dh, sh));
+  // 1) Standaard Fullscreen API
+  if (document.fullscreenElement) return true;
+
+  // 2) Heuristieken voor F11/desktop
+  const iw = window.innerWidth;
+  const ih = window.innerHeight;
+
+  // Gebruik meerdere referenties (sommige browsers vullen er 1 of 2 in)
+  const sw = Math.max(screen.width, screen.availWidth || 0, window.outerWidth || 0);
+  const sh = Math.max(screen.height, screen.availHeight || 0, window.outerHeight || 0);
+
+  // Tolerantie ruim houden (taskbar, titelbalk, scaling, multi-monitor)
+  const T = 120; // px marge
+
+  const widthOK  = Math.abs(sw - iw) <= T || iw >= sw - T;
+  const heightOK = Math.abs(sh - ih) <= T || ih >= sh - T;
+
+  return widthOK && heightOK;
 }
 
 function updateFsHint(){
