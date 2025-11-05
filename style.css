@@ -7,7 +7,7 @@
   --radius: 12px;
 
   /* Footer schaalt mee met scherm */
-  --footer-font-size: clamp(0.5rem, 1.3vw, 5rem);
+  --footer-font-size: clamp(0.5rem, 1.2vw, 5rem);
   --footer-pad-y: 0.8rem;
   --footer-pad-x: 1rem;
 
@@ -15,8 +15,8 @@
   --glow-time: 600ms;
 }
 
-/* Basis rem-maat schaalt mee (desktop); mobiel blijft leesbaar */
-html { font-size: clamp(14px, 1.2vw, 20px); }
+/* Stabiele tekstschaal – minder gevoelig voor verschillen tussen Chrome/Edge */
+html { font-size: clamp(14px, 0.9rem + 0.6vw, 20px); }
 @media (max-width: 900px){
   html { font-size: 16px; }
 }
