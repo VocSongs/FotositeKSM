@@ -3,11 +3,11 @@
   --sidebar-w: clamp(280px, 20vw, 660px);
 
   --sponsor-gap: 2px;
-  --sponsor-pad: 4px;
+  --sponsor-pad: 2px;
   --radius: 12px;
 
   /* Footer schaalt mee met scherm */
-  --footer-font-size: clamp(0.5rem, 0.8vw, 5rem);
+  --footer-font-size: clamp(0.5rem, 0.8vw, 2rem);
   --footer-pad-y: 0.8rem;
   --footer-pad-x: 1rem;
 
@@ -180,7 +180,7 @@ html, body {
 .loaderLogo { max-width: 28%; height: auto; opacity: .9; }
 .loaderText {
   margin-top: 1rem;
-  font-size: clamp(1.2rem, 0.9vw, 2rem); /* groter, responsief */
+  font-size: clamp(0.5rem, 0.9vw, 2rem); /* groter, responsief */
   color: #fff;
   text-align:center;
   text-shadow: 0 0 8px rgba(255,255,255,.6);
@@ -190,7 +190,7 @@ html, body {
 .startFsBtn{
   margin-top: 10px;
   padding: 10px 14px;
-  font-size: clamp(0.5rem, 0.9vw, 1.5rem);
+  font-size: clamp(0.5rem, 0.8vw, 2rem);
   color: #fff;
   background: rgba(255,255,255,0.12);
   border: 1px solid rgba(255,255,255,0.35);
