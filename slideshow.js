@@ -240,29 +240,75 @@ function startSmoothScroll(){
 
 
 function renderSponsorColumn(){
-  if(!sponsorColEl) return;
-  sponsorColEl.innerHTML="";
-  if(SPONSOR_ANIMATIE==="smooth-scroll"){
-    const track=document.createElement("div");
-    track.className="sponsorTrack";
-    track.style.display="flex";
-    track.style.flexDirection="column";
-    track.style.gap="12px";
+  if (!sponsorColEl) return;
+
+  sponsorColEl.innerHTML = "";
+
+  const list = sponsorImages.length ? sponsorImages : [];
+
+  // 1) Gewenste modus: smooth-scroll
+  if (SPONSOR_ANIMATIE === "smooth-scroll"){
+    // bouw track
+    const track = document.createElement("div");
+    track.className = "sponsorTrack";
+    track.style.display = "flex";
+    track.style.flexDirection = "column";
+    track.style.gap = "12px";
     sponsorColEl.appendChild(track);
-    const list=sponsorImages.length?sponsorImages:[];
-    if(list.length){
-      const frag=document.createDocumentFragment();
-      list.forEach(f=>frag.appendChild(createSponsorTile(f.url)));
-      track.appendChild(frag.cloneNode(true));
-      track.appendChild(frag.cloneNode(true));
+
+    // vul eenmaal
+    list.forEach(file => {
+      track.appendChild(createSponsorTile(file && file.url ? file.url : null));
+    });
+
+    // als we niks hebben, stop netjes
+    if (!track.children.length){
+      console.warn("[sponsors] Geen sponsors gevonden; niets te scrollen.");
+      return;
     }
-    startSmoothScroll(); return;
+
+    // dupliceer voor naadloze loop (minstens 2 sets)
+    track.appendChild(track.cloneNode(true));
+
+    // safety: zorg dat er genoeg hoogte is (marginaal extra)
+    while (track.scrollHeight < sponsorColEl.clientHeight * 2 && track.children.length < 200){
+      track.appendChild(track.cloneNode(true));
+    }
+
+    startSmoothScroll();
+    return;
   }
-  // fallback
-  const list=sponsorImages.length?sponsorImages:[]; 
-  const take=Math.max(NUM_SPONSORS_VISIBLE,list.length);
-  for(let i=0;i<take;i++){ const f=list[i%(list.length||1)]; sponsorColEl.appendChild(createSponsorTile(f.url)); }
+
+  // 2) Fallback: statisch (TV of expliciet static)
+  const take = Math.max(NUM_SPONSORS_VISIBLE, list.length);
+  for (let i = 0; i < take; i++){
+    const file = list[i % (list.length || 1)];
+    sponsorColEl.appendChild(createSponsorTile(file && file.url ? file.url : null));
+  }
+
+  // === BONUS-REPAIR ===
+  // Mocht de modus op 'smooth-scroll' staan maar we zijn hier toch terechtgekomen
+  // (bijv. door CSS/DOM race), dan pakken we de reeds gemaakte items op en
+  // herverpakken we ze alsnog in een track en starten de scroll.
+  if (SPONSOR_ANIMATIE === "smooth-scroll"){
+    const items = [...sponsorColEl.querySelectorAll(".sponsorItem")];
+    if (items.length){
+      const track = document.createElement("div");
+      track.className = "sponsorTrack";
+      track.style.display = "flex";
+      track.style.flexDirection = "column";
+      track.style.gap = "12px";
+      items.forEach(n => track.appendChild(n));
+      sponsorColEl.innerHTML = "";
+      sponsorColEl.appendChild(track);
+
+      // dupliceer voor loop
+      track.appendChild(track.cloneNode(true));
+      startSmoothScroll();
+    }
+  }
 }
+
 
 // ***** REFRESH MEDIA *****
 async function refreshMedia(){
