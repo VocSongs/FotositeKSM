@@ -4,10 +4,11 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>International Football Happening</title>
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
 
-  <link rel="stylesheet" href="style.css?v=fix1">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="style.css?v=fix2">
 </head>
 <body>
   <!-- Sidebar sponsors -->
@@ -17,16 +18,15 @@
     <div id="lastRefresh" class="lastRefreshSide"></div>
   </aside>
 
-  <img src="happening26.png" id="cornerBadge" alt="Happening 2026">
-  
   <!-- Slideshow -->
   <main class="slideshow"></main>
 
   <!-- Footer -->
   <footer class="footerOverlay" aria-label="Footer">
     <div class="sponsorLine">
-      INTERNATIONAL FOOTBALL HAPPENING 2026 — FOOTBALL, BEER AND FRIENDS<br>KROM &amp; STIJF VETERANEN MILLEN
-    </div>  
+      INTERNATIONAL FOOTBALL HAPPENING 2026 — FOOTBALL, BEER AND FRIENDS<br>
+      KROM &amp; STIJF VETERANEN MILLEN
+    </div>
   </footer>
 
   <!-- Audio toggle -->
@@ -35,10 +35,16 @@
   <!-- Loader + fullscreen prompt -->
   <div id="loader">
     <img src="loader.png" class="loaderLogo" alt="KSM" />
-    <div class="loaderText">Welkom op de site van onze International Football Happening.<br>Je vindt hier info en sfeerbeelden van vorige edities.</div>
+    <div class="loaderText">
+      Welkom op de site van onze International Football Happening.<br>
+      Je vindt hier info en sfeerbeelden van vorige edities.
+    </div>
     <button id="startFsBtn" class="startFsBtn">Klik hier om te starten in fullscreen</button>
   </div>
 
-  <script src="slideshow.js?v=fix1" defer></script>
- </body>
+  <!-- Hoeklogo rechtsonder (moet buiten de sidebar en na de slideshow staan) -->
+  <img src="happening26.png" id="cornerBadge" alt="Happening 2026">
+
+  <script src="slideshow.js?v=fix2" defer></script>
+</body>
 </html>
