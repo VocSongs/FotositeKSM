@@ -249,31 +249,38 @@ async function refreshSponsorsFromDrive(){
 
 let sponsorImages = [];
 
+
 function startSmoothScroll(){
   if (animationFrameId) cancelAnimationFrame(animationFrameId);
   const track = sponsorColEl?.querySelector(".sponsorTrack");
   if (!track) return;
 
-  scrollOffset = 0; scrollTarget = 0; lastTime = 0;
+  // hoogte van één set (we renderen 2 identieke sets)
+  let loopH = 0;
+  // meet na 1 frame (zeker dat layout/hoogte klopt)
+  requestAnimationFrame(() => { loopH = track.scrollHeight / 2; });
+
+  let last = performance.now();
 
   function step(ts){
-    if (!lastTime) lastTime = ts;
-    const delta = (ts - lastTime) / 1000;
-    lastTime = ts;
+    const dt = (ts - last) / 1000;
+    last = ts;
 
-    // snelheid naar doel
-    scrollTarget += SCROLL_SPEED_PX_PER_SEC * delta;
-    scrollOffset += (scrollTarget - scrollOffset) * SCROLL_EASE_FACTOR;
+    // lineaire vooruitgang voor maximale stabiliteit (TV's/browsers)
+    sponsorColEl.scrollTop += SCROLL_SPEED_PX_PER_SEC * dt;
 
-    // ---- Naadloze loop: reset vóór het visuele einde ----
-    const loopH       = track.scrollHeight / 2;           // hoogte van 1 set (we hebben 2 sets)
-    const visibleH    = sponsorColEl.clientHeight;
-    const resetPoint  = loopH - visibleH - 1;             // iets vóór einde, zodat er nooit “leegte” verschijnt
-
-    if (scrollOffset >= resetPoint){
-      scrollOffset -= loopH;
-      scrollTarget -= loopH;
+    // Naadloze loop: zodra we voorbij 1 set zijn, trek die hoogte eraf (geen sprong)
+    if (loopH && sponsorColEl.scrollTop >= loopH){
+      sponsorColEl.scrollTop -= loopH;
     }
+
+    lastScrollTick = ts;
+    animationFrameId = requestAnimationFrame(step);
+  }
+
+  animationFrameId = requestAnimationFrame(step);
+}
+
 
     sponsorColEl.scrollTop = scrollOffset;
     lastScrollTick = ts;
@@ -283,25 +290,45 @@ function startSmoothScroll(){
   animationFrameId = requestAnimationFrame(step);
 }
 
+
 function renderSponsorColumn(){
   if(!sponsorColEl) return;
-  sponsorColEl.innerHTML="";
+  sponsorColEl.innerHTML = "";
 
-if (SPONSOR_ANIMATIE === "smooth-scroll" && !IS_MOBILE){
-  const track = document.createElement("div");
-  track.className = "sponsorTrack";
-  track.style.display = "flex";
-  track.style.flexDirection = "column";
-  track.style.gap = "16px"; // iets kleiner helpt om de overgang nog minder zichtbaar te maken
-  sponsorColEl.appendChild(track);
+  if (SPONSOR_ANIMATIE === "smooth-scroll" && !IS_MOBILE){
+    const track = document.createElement("div");
+    track.className = "sponsorTrack";
+    track.style.display = "flex";
+    track.style.flexDirection = "column";
+    track.style.gap = "16px";
+    sponsorColEl.appendChild(track);
 
-  const list = sponsorImages.length ? sponsorImages : [];
-  for (let k = 0; k < 2; k++){        // 2 sets = genoeg voor naadloos loopen
-    list.forEach(file => {
-      const item = createSponsorTile(file && file.url ? file.url : null);
-      track.appendChild(item);
-    });
+    const list = sponsorImages.length ? sponsorImages : [];
+    if (list.length){
+      const frag = document.createDocumentFragment();
+      list.forEach(file => {
+        const item = createSponsorTile(file && file.url ? file.url : null);
+        frag.appendChild(item);
+      });
+      // 2 identieke sets voor naadloos loopen
+      track.appendChild(frag.cloneNode(true));
+      track.appendChild(frag.cloneNode(true));
+    }
+
+    startSmoothScroll();
+    return;
   }
+
+  // Fallback: statisch raster (TV of geen animatie)
+  const list = sponsorImages.length ? sponsorImages : [];
+  const take = Math.max(NUM_SPONSORS_VISIBLE, list.length);
+  for(let i=0; i<take; i++){
+    const file = list[i % (list.length || 1)];
+    const item = createSponsorTile(file && file.url ? file.url : null);
+    sponsorColEl.appendChild(item);
+  }
+}
+
 
   startSmoothScroll();
   return;
@@ -358,6 +385,7 @@ async function init(){
   lastRefreshEl = document.getElementById("lastRefresh");
   noPhotosEl    = document.getElementById("noPhotosMsg");
   sponsorColEl  = document.getElementById("sponsorCol");
+  if (sponsorColEl) sponsorColEl.style.scrollBehavior = 'auto';
   audioBtn      = document.getElementById("audioToggle");
 
   // Fullscreen via loader-knop
