@@ -360,8 +360,21 @@ async function init(){
   containerEl   = document.querySelector(".slideshow");
   lastRefreshEl = document.getElementById("lastRefresh");
   noPhotosEl    = document.getElementById("noPhotosMsg");
-  sponsorColEl  = document.getElementById("sponsorCol");
-  if (sponsorColEl) sponsorColEl.style.scrollBehavior = 'auto';
+  if (sponsorColEl){
+  // programmatic scroll aanzetten en smooth uitschakelen
+  sponsorColEl.style.overflowY = 'auto';
+  sponsorColEl.style.scrollBehavior = 'auto';
+
+  // scrollbar onzichtbaar maken (maar wel scrollbaar)
+  sponsorColEl.classList.add('noScrollbars');
+  const style = document.createElement('style');
+  style.textContent = `
+    .noScrollbars { scrollbar-width: none; -ms-overflow-style: none; }
+    .noScrollbars::-webkit-scrollbar { display: none; }
+  `;
+  document.head.appendChild(style);
+}
+
   audioBtn      = document.getElementById("audioToggle");
 
   // Fullscreen via loader-knop
