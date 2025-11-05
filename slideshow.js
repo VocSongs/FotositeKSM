@@ -304,9 +304,18 @@ async function init(){
   await Promise.all([refreshMedia(),refreshSponsorsFromDrive()]);
   sponsorTimer=setInterval(refreshSponsorsFromDrive,SPONSOR_REFRESH_INTERVAL);
 
-  if(SPONSOR_ANIMATIE==='smooth-scroll'){
-    document.addEventListener('visibilitychange',()=>{ if(document.visibilityState==='visible') startSmoothScroll(); });
-    setInterval(()=>{ const hasTrack=sponsorColEl?.querySelector('.sponsorTrack'); const tooLong=(performance.now()-lastScrollTick)>3000; if(!animationFrameId||!hasTrack||tooLong) startSmoothScroll(); },2000);
-  }
+if (SPONSOR_ANIMATIE === 'smooth-scroll'){
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') startSmoothScroll();
+  });
+  setInterval(() => {
+    const hasTrack = sponsorColEl && sponsorColEl.querySelector('.sponsorTrack');
+    const tooLong  = (performance.now() - lastScrollTick) > 3000;
+    // herstart als er iets vastloopt
+    if (!hasTrack || tooLong || !animationFrameId) startSmoothScroll();
+  }, 2000);
 }
+
+// ✅ init() hoort HIER — buiten de if
 init();
+
