@@ -1,6 +1,6 @@
 :root {
   /* Brede, responsieve sidebar */
-  --sidebar-w: clamp(280px, 20vw, 660px);
+  --sidebar-w: clamp(200px, 18vw, 800px);
 
   --sponsor-gap: 2px;
   --sponsor-pad: 5px;
