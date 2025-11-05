@@ -192,14 +192,24 @@ async function init(){
   if (sponsorColEl){ sponsorColEl.style.overflow = "hidden"; }
 
   // fullscreen-knop
-  const fsBtn=document.getElementById("startFsBtn");
-  if(fsBtn){
-    fsBtn.addEventListener("click", async ()=>{
-      try{ await document.documentElement.requestFullscreen(); }catch(e){}
-      hideLoader();
+ const fsBtn = document.getElementById("startFsBtn");
+if (fsBtn) {
+  fsBtn.addEventListener("click", async () => {
+    // probeer fullscreen aan te vragen
+    try {
+      await document.documentElement.requestFullscreen();
+    } catch (e) {
+      console.warn("Fullscreen niet toegestaan:", e);
+    }
+
+    // even wachten tot fullscreen actief is (zekerheid)
+    setTimeout(() => {
+      hideLoader();      // fade het laadscherm weg
       fsBtn.blur();
-    });
-  }
+    }, 500);
+  });
+}
+
 
   // audio
   if(audioBtn){
