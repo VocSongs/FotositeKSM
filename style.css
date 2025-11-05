@@ -1,6 +1,6 @@
 :root {
   /* Brede, responsieve sidebar */
-  --sidebar-w: clamp(280px, 25vw, 660px);
+  --sidebar-w: clamp(280px, 20vw, 660px);
 
   --sponsor-gap: 2px;
   --sponsor-pad: 18px;
@@ -180,7 +180,7 @@ html, body {
 .loaderLogo { max-width: 28%; height: auto; opacity: .9; }
 .loaderText {
   margin-top: 1rem;
-  font-size: clamp(1.2rem, 1.2vw, 2rem); /* groter, responsief */
+  font-size: clamp(1.2rem, 1vw, 2rem); /* groter, responsief */
   color: #fff;
   text-align:center;
   text-shadow: 0 0 8px rgba(255,255,255,.6);
