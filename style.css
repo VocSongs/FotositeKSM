@@ -155,7 +155,7 @@ html, body {
 .lastRefreshUnder{
   position: absolute;
   left: 12px; right: 12px; bottom: 8px;
-  font-size: clamp(0.8rem, 0.9vw, 1rem);
+  font-size: clamp(0.6rem, 0.8vw, 1rem);
   color: #fff;
   text-align: center;
   opacity: .95;
@@ -178,7 +178,7 @@ html, body {
 .loaderLogo{ max-width: 28%; height: auto; opacity: .9; }
 .loaderText{
   margin-top: 1rem;
-  font-size: clamp(1.2rem, 1.6vw, 2rem);
+  font-size: clamp(0.5rem, 1.2vw, 2rem);
   color: #fff;
   text-align: center;
   text-shadow: 0 0 8px rgba(255,255,255,.6);
