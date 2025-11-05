@@ -11,7 +11,7 @@ let   SPONSOR_ANIMATIE = "smooth-scroll";   // "smooth-scroll" | "static"
 // ***** GLOBALE INSTELLINGEN *****
 const IS_MOBILE               = window.matchMedia("(max-width: 900px)").matches;
 const LIVE_MAX_AGE_HOURS      = 2;
-const DISPLAY_TIME            = 5000;
+const DISPLAY_TIME            = 5000;  // ms per foto
 const FADE_MS                 = 1000;
 const NUM_SPONSORS_VISIBLE    = 4;
 const SPONSOR_REFRESH_INTERVAL= 5 * 60 * 1000;
@@ -31,25 +31,21 @@ let canDismissLoader = false;
 let audioEnabled = false; // start muted
 let audioBtn;
 
-// --- Image timing control (pause during video) ---
+// --- Image timing control (pauze tijdens video) ---
 let imageTimerId = null;
 function clearImageTimer(){
-  if(imageTimerId){ clearTimeout(imageTimerId); imageTimerId = null; }
+  if (imageTimerId){ clearTimeout(imageTimerId); imageTimerId = null; }
 }
 function startImageTimer(){
   clearImageTimer();
   imageTimerId = setTimeout(()=>{ nextMedia(); }, DISPLAY_TIME);
 }
 
-
 // Smooth scroll vars
 const SCROLL_SPEED_PX_PER_SEC = 20;
-const SCROLL_EASE_FACTOR      = 0.08;
+const SCROLL_EASE_FACTOR      = 0.08; // (niet gebruikt in lineaire variant, mag blijven)
 let animationFrameId = null;
 let lastScrollTick   = performance.now();
-let lastTime         = 0;
-let scrollOffset     = 0;
-let scrollTarget     = 0;
 
 // ***** SMART TV DETECTIE & FALLBACK *****
 function isSmartTV(){
@@ -107,22 +103,21 @@ function filterRecentLivePhotos(files){
 
 // ***** UI HELPERS *****
 function hideLoader(){
-  if (!canDismissLoader) return;
-  if (loaderHidden) return;
-  const loader=document.getElementById("loader");
-  if(loader){ loader.classList.add("fadeOut"); }
-  loaderHidden=true;
+  if (!canDismissLoader || loaderHidden) return;
+  const loader = document.getElementById("loader");
+  if (loader) loader.classList.add("fadeOut");
+  loaderHidden = true;
 }
 
 function createImgEl(){
-  const el=document.createElement("img");
-  el.className="slideImage";
-  el.style.opacity="0";
+  const el = document.createElement("img");
+  el.className = "slideImage";
+  el.style.opacity = "0";
   return el;
 }
 function createVideoEl(){
-  const el=document.createElement("video");
-  el.className="slideVideo";
+  const el = document.createElement("video");
+  el.className = "slideVideo";
   el.playsInline = true;
   el.setAttribute("playsinline","");
   el.setAttribute("webkit-playsinline","");
@@ -132,7 +127,7 @@ function createVideoEl(){
   el.muted      = !audioEnabled;
   el.preload    = "auto";
   el.crossOrigin = "anonymous";
-  el.style.opacity="0";
+  el.style.opacity = "0";
   return el;
 }
 
@@ -159,8 +154,9 @@ function applyAudioTo(el){
 
 // ***** SLIDESHOW LOGICA *****
 function showCurrent(){
-  // reset any running image timer when switching
+  // reset image timer bij elke overgang
   clearImageTimer();
+
   if (!mediaItems.length){
     if(currentEl){ currentEl.remove(); currentEl=null; }
     if(noPhotosEl) noPhotosEl.hidden = false;
@@ -191,12 +187,13 @@ function showCurrent(){
       setTimeout(()=>{
         if(currentEl) currentEl.remove();
         currentEl = incoming;
-        // start per-image timer AFTER fade so the photo displays a full DISPLAY_TIME
+        // start per-image timer NA de fade
         startImageTimer();
       }, FADE_MS);
     };
     pre.onerror = ()=>{ nextMedia(true); };
-  } else if (item.type === "video"){ clearImageTimer();
+  } else if (item.type === "video"){
+    clearImageTimer();
     hideLoader();
     incoming = createVideoEl();
     incoming.src = item.url;
@@ -249,7 +246,7 @@ async function refreshSponsorsFromDrive(){
 
 let sponsorImages = [];
 
-
+// Naadloos scrollen (lineair; geen sprong)
 function startSmoothScroll(){
   if (animationFrameId) cancelAnimationFrame(animationFrameId);
   const track = sponsorColEl?.querySelector(".sponsorTrack");
@@ -266,10 +263,10 @@ function startSmoothScroll(){
     const dt = (ts - last) / 1000;
     last = ts;
 
-    // lineaire vooruitgang voor maximale stabiliteit (TV's/browsers)
+    // lineair schuiven (stabiel op tv's/browsers)
     sponsorColEl.scrollTop += SCROLL_SPEED_PX_PER_SEC * dt;
 
-    // Naadloze loop: zodra we voorbij 1 set zijn, trek die hoogte eraf (geen sprong)
+    // naadloze loop: zodra voorbij 1 set, trek die hoogte eraf
     if (loopH && sponsorColEl.scrollTop >= loopH){
       sponsorColEl.scrollTop -= loopH;
     }
@@ -281,18 +278,8 @@ function startSmoothScroll(){
   animationFrameId = requestAnimationFrame(step);
 }
 
-
-    sponsorColEl.scrollTop = scrollOffset;
-    lastScrollTick = ts;
-    animationFrameId = requestAnimationFrame(step);
-  }
-
-  animationFrameId = requestAnimationFrame(step);
-}
-
-
 function renderSponsorColumn(){
-  if(!sponsorColEl) return;
+  if (!sponsorColEl) return;
   sponsorColEl.innerHTML = "";
 
   if (SPONSOR_ANIMATIE === "smooth-scroll" && !IS_MOBILE){
@@ -300,7 +287,7 @@ function renderSponsorColumn(){
     track.className = "sponsorTrack";
     track.style.display = "flex";
     track.style.flexDirection = "column";
-    track.style.gap = "16px";
+    track.style.gap = "12px"; // iets kleiner = vloeiender
     sponsorColEl.appendChild(track);
 
     const list = sponsorImages.length ? sponsorImages : [];
@@ -319,43 +306,11 @@ function renderSponsorColumn(){
     return;
   }
 
-  // Fallback: statisch raster (TV of geen animatie)
+  // Fallback: statisch (TV of animatie uit)
   const list = sponsorImages.length ? sponsorImages : [];
   const take = Math.max(NUM_SPONSORS_VISIBLE, list.length);
-  for(let i=0; i<take; i++){
+  for (let i = 0; i < take; i++){
     const file = list[i % (list.length || 1)];
-    const item = createSponsorTile(file && file.url ? file.url : null);
-    sponsorColEl.appendChild(item);
-  }
-}
-
-
-  startSmoothScroll();
-  return;
-}
-
-  if(SPONSOR_ANIMATIE==="smooth-scroll" && !IS_MOBILE){
-    const track=document.createElement("div");
-    track.className="sponsorTrack";
-    track.style.display="flex";
-    track.style.flexDirection="column";
-    track.style.gap="24px";
-    sponsorColEl.appendChild(track);
-    const list = sponsorImages.length ? sponsorImages : [];
-    for(let k=0;k<2;k++){
-      list.forEach(file=>{
-        const item = createSponsorTile(file && file.url ? file.url : null);
-        track.appendChild(item);
-      });
-    }
-    startSmoothScroll();
-    return;
-  }
-
-  const list = sponsorImages.length ? sponsorImages : [];
-  const take = Math.max(NUM_SPONSORS_VISIBLE, list.length);
-  for(let i=0; i<take; i++){
-    const file=list[i%list.length];
     const item = createSponsorTile(file && file.url ? file.url : null);
     sponsorColEl.appendChild(item);
   }
@@ -410,7 +365,7 @@ async function init(){
   }
 
   await Promise.all([refreshMedia(), refreshSponsorsFromDrive()]);
-  // Per-image timer is managed in showCurrent() -> startImageTimer()
+  // per-image timer wordt gestart in showCurrent() -> startImageTimer()
 
   sponsorTimer = setInterval(refreshSponsorsFromDrive, SPONSOR_REFRESH_INTERVAL);
 
