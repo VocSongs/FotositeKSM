@@ -250,24 +250,36 @@ async function refreshSponsorsFromDrive(){
 let sponsorImages = [];
 
 function startSmoothScroll(){
-  if(animationFrameId) cancelAnimationFrame(animationFrameId);
+  if (animationFrameId) cancelAnimationFrame(animationFrameId);
   const track = sponsorColEl?.querySelector(".sponsorTrack");
-  if(!track) return;
+  if (!track) return;
+
   scrollOffset = 0; scrollTarget = 0; lastTime = 0;
+
   function step(ts){
-    if(!lastTime) lastTime = ts;
+    if (!lastTime) lastTime = ts;
     const delta = (ts - lastTime) / 1000;
     lastTime = ts;
+
+    // snelheid naar doel
     scrollTarget += SCROLL_SPEED_PX_PER_SEC * delta;
     scrollOffset += (scrollTarget - scrollOffset) * SCROLL_EASE_FACTOR;
-    if(scrollOffset >= track.scrollHeight / 2){
-      scrollOffset = 0;
-      scrollTarget = 0;
+
+    // ---- Naadloze loop: reset vóór het visuele einde ----
+    const loopH       = track.scrollHeight / 2;           // hoogte van 1 set (we hebben 2 sets)
+    const visibleH    = sponsorColEl.clientHeight;
+    const resetPoint  = loopH - visibleH - 1;             // iets vóór einde, zodat er nooit “leegte” verschijnt
+
+    if (scrollOffset >= resetPoint){
+      scrollOffset -= loopH;
+      scrollTarget -= loopH;
     }
+
     sponsorColEl.scrollTop = scrollOffset;
     lastScrollTick = ts;
     animationFrameId = requestAnimationFrame(step);
   }
+
   animationFrameId = requestAnimationFrame(step);
 }
 
@@ -275,14 +287,25 @@ function renderSponsorColumn(){
   if(!sponsorColEl) return;
   sponsorColEl.innerHTML="";
 
-  if (SPONSOR_ANIMATIE === "static"){
-    const list = sponsorImages.length ? sponsorImages : [];
+if (SPONSOR_ANIMATIE === "smooth-scroll" && !IS_MOBILE){
+  const track = document.createElement("div");
+  track.className = "sponsorTrack";
+  track.style.display = "flex";
+  track.style.flexDirection = "column";
+  track.style.gap = "16px"; // iets kleiner helpt om de overgang nog minder zichtbaar te maken
+  sponsorColEl.appendChild(track);
+
+  const list = sponsorImages.length ? sponsorImages : [];
+  for (let k = 0; k < 2; k++){        // 2 sets = genoeg voor naadloos loopen
     list.forEach(file => {
       const item = createSponsorTile(file && file.url ? file.url : null);
-      sponsorColEl.appendChild(item);
+      track.appendChild(item);
     });
-    return;
   }
+
+  startSmoothScroll();
+  return;
+}
 
   if(SPONSOR_ANIMATIE==="smooth-scroll" && !IS_MOBILE){
     const track=document.createElement("div");
