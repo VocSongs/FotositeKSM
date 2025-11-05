@@ -17,6 +17,7 @@ const NUM_SPONSORS_VISIBLE    = 4;
 const SPONSOR_REFRESH_INTERVAL= 5 * 60 * 1000;
 const PHOTO_THUMB_WIDTH       = IS_MOBILE ? 1200 : 2000;
 const SPONSOR_THUMB_WIDTH     = IS_MOBILE ? 600  : 800;
+let canDismissLoader = false;
 
 // Slideshow
 let mediaItems   = [];
@@ -94,8 +95,13 @@ function filterRecentLivePhotos(files){
 }
 
 // ***** UI HELPERS *****
-function hideLoader(){ if (loaderHidden) return; const loader=document.getElementById("loader"); if(loader){ loader.classList.add("fadeOut"); } loaderHidden=true; }
-
+function hideLoader(){
+  if (!canDismissLoader) return;          // <-- blokkeer tot klik
+  if (loaderHidden) return;
+  const loader = document.getElementById("loader");
+  if (loader){ loader.classList.add("fadeOut"); }
+  loaderHidden = true;
+}
 function createImgEl(){
   const el=document.createElement("img");
   el.className="slideImage";
@@ -315,14 +321,16 @@ async function init(){
   sponsorColEl  = document.getElementById("sponsorCol");
   audioBtn      = document.getElementById("audioToggle");
 
-  // Fullscreen via loader-knop
-  const fsBtn = document.getElementById('startFsBtn');
-  if (fsBtn){
-    fsBtn.addEventListener('click', async () => {
-      try { await document.documentElement.requestFullscreen(); } catch(e) {}
-      fsBtn.blur();
-    });
-  }
+// Fullscreen via loader-knop
+const fsBtn = document.getElementById('startFsBtn');
+if (fsBtn){
+  fsBtn.addEventListener('click', async () => {
+    try { await document.documentElement.requestFullscreen(); } catch(e) {}
+    canDismissLoader = true;               // <-- nu mag de loader weg
+    hideLoader();
+    fsBtn.blur();
+  });
+}
 
   // Audio toggle
   if(audioBtn){
