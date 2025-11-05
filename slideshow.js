@@ -322,18 +322,19 @@ async function refreshMedia(){
 
 // ***** INIT *****
 async function init(){
-  containerEl=document.querySelector(".slideshow");
+    containerEl=document.querySelector(".slideshow");
   lastRefreshEl=document.getElementById("lastRefresh");
   noPhotosEl=document.getElementById("noPhotosMsg");
-  sponsorColEl=document.getElementById("sponsorCol");   // ✅ fix
-  if(sponsorColEl){
-    sponsorColEl.style.overflowY='auto';
-    sponsorColEl.style.scrollBehavior='auto';
-    sponsorColEl.classList.add('noScrollbars');
-    const style=document.createElement('style');
-    style.textContent=`.noScrollbars{scrollbar-width:none;-ms-overflow-style:none}.noScrollbars::-webkit-scrollbar{display:none}`;
-    document.head.appendChild(style);
-  }
+sponsorColEl = document.getElementById("sponsorCol");
+if (sponsorColEl){
+  sponsorColEl.style.overflowY = 'auto';
+  sponsorColEl.style.scrollBehavior = 'auto';
+  sponsorColEl.classList.add('noScrollbars');
+  const style = document.createElement('style');
+  style.textContent = `.noScrollbars{scrollbar-width:none;-ms-overflow-style:none}.noScrollbars::-webkit-scrollbar{display:none}`;
+  document.head.appendChild(style);
+}
+
   audioBtn=document.getElementById("audioToggle");
 
   // Fullscreen via loader
