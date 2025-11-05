@@ -18,6 +18,32 @@ const SPONSOR_REFRESH_INTERVAL= 5 * 60 * 1000;
 const PHOTO_THUMB_WIDTH       = IS_MOBILE ? 1200 : 2000;
 const SPONSOR_THUMB_WIDTH     = IS_MOBILE ? 600  : 800;
 
+function isFullscreenLike(){
+  // Detecteer F11/werkelijk fullscreen via maatvergelijking of API
+  const dw = window.innerWidth,  dh = window.innerHeight;
+  const sw = screen.availWidth || screen.width;
+  const sh = screen.availHeight || screen.height;
+  const near = (a,b)=> Math.abs(a-b) <= 40; // marge voor OS-balken
+  return document.fullscreenElement || (near(dw, sw) && near(dh, sh));
+}
+
+function updateFsHint(){
+  const el   = document.getElementById('fsHint');
+  if (!el) return;
+  // toon alleen op desktop + geen smart tv
+  const show = !IS_MOBILE && !IS_TV && !isFullscreenLike();
+  el.hidden = !show;
+}
+
+function wireFsHintClose(){
+  const btn = document.getElementById('fsHintClose');
+  if (!btn) return;
+  btn.addEventListener('click', ()=>{
+    const el = document.getElementById('fsHint');
+    if (el) el.hidden = true;
+  });
+}
+
 // Slideshow
 let mediaItems   = [];  // [{type:'image'|'video', url, id, name}]
 let currentIndex = 0;
@@ -333,6 +359,10 @@ async function init(){
   noPhotosEl    = document.getElementById("noPhotosMsg");
   sponsorColEl  = document.getElementById("sponsorCol");
   audioBtn      = document.getElementById("audioToggle");
+    wireFsHintClose();
+  updateFsHint();
+  window.addEventListener('resize', updateFsHint);
+  document.addEventListener('fullscreenchange', updateFsHint);
 
   // Audio toggle
   if(audioBtn){
