@@ -46,23 +46,27 @@ const SCROLL_SPEED_PX_PER_SEC = 20;
 let animationFrameId = null;
 let lastScrollTick   = performance.now();
 
-// ***** SMART TV DETECTIE & FALLBACK (strakker) *****
+// ***** SMART TV DETECTIE & FALLBACK (veilig en voorspelbaar) *****
 function isSmartTV(){
   const ua = navigator.userAgent || "";
-  // Enkele echte TV-platforms, geen mobile/desktop browsers
+  // Alleen echte TV-platforms; geen SamsungBrowser op desktop/phone
   return /(Web0S|Tizen|NetCast|HbbTV|Android\sTV|AppleTV|Viera|Bravia|TV\sBuild)/i.test(ua);
 }
+
 const IS_TV = isSmartTV();
-console.log("DEBUG → UA:", navigator.userAgent);
-console.log("DEBUG → IS_TV =", IS_TV, "IS_MOBILE =", IS_MOBILE);
-SPONSOR_ANIMATIE = "smooth-scroll";  // forceer tijdelijk animatie
-// Op echte TV: fallback "static". Anders: altijd smooth.
-if (IS_TV && !/Windows|Macintosh|X11|Linux/i.test(navigator.userAgent)) {
+
+// Standaard ALTIJD smooth-scroll…
+SPONSOR_ANIMATIE = "smooth-scroll";
+
+// …tenzij het echt een TV-UA is (dan static)
+if (IS_TV && /TV|SmartTV|Tizen|webOS/i.test(navigator.userAgent)) {
   SPONSOR_ANIMATIE = "static";
-  console.log("Smart TV gedetecteerd – sponsor-fallback actief.");
-} else {
-  SPONSOR_ANIMATIE = "smooth-scroll";
+  console.log("Smart-TV-fallback actief");
 }
+
+console.log("DEBUG → UA:", navigator.userAgent);
+console.log("DEBUG → IS_TV =", IS_TV, "IS_MOBILE =", IS_MOBILE, "SPONSOR_ANIMATIE =", SPONSOR_ANIMATIE);
+
 
 // ***** DRIVE HELPERS *****
 async function fetchFolderMediaOrdered(folderId){
