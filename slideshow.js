@@ -11,7 +11,7 @@ let   SPONSOR_ANIMATIE = "smooth-scroll";   // "smooth-scroll" | "static"
 // ***** GLOBALE INSTELLINGEN *****
 const IS_MOBILE               = window.matchMedia("(max-width: 900px)").matches;
 const LIVE_MAX_AGE_HOURS      = 2;
-const DISPLAY_TIME            = 7000;
+const DISPLAY_TIME            = 5000;
 const FADE_MS                 = 1000;
 const NUM_SPONSORS_VISIBLE    = 4;
 const SPONSOR_REFRESH_INTERVAL= 5 * 60 * 1000;
