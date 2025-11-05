@@ -31,6 +31,17 @@ let canDismissLoader = false;
 let audioEnabled = false; // start muted
 let audioBtn;
 
+// --- Image timing control (pause during video) ---
+let imageTimerId = null;
+function clearImageTimer(){
+  if(imageTimerId){ clearTimeout(imageTimerId); imageTimerId = null; }
+}
+function startImageTimer(){
+  clearImageTimer();
+  imageTimerId = setTimeout(()=>{ nextMedia(); }, DISPLAY_TIME);
+}
+
+
 // Smooth scroll vars
 const SCROLL_SPEED_PX_PER_SEC = 20;
 const SCROLL_EASE_FACTOR      = 0.08;
@@ -148,6 +159,8 @@ function applyAudioTo(el){
 
 // ***** SLIDESHOW LOGICA *****
 function showCurrent(){
+  // reset any running image timer when switching
+  clearImageTimer();
   if (!mediaItems.length){
     if(currentEl){ currentEl.remove(); currentEl=null; }
     if(noPhotosEl) noPhotosEl.hidden = false;
@@ -178,10 +191,12 @@ function showCurrent(){
       setTimeout(()=>{
         if(currentEl) currentEl.remove();
         currentEl = incoming;
+        // start per-image timer AFTER fade so the photo displays a full DISPLAY_TIME
+        startImageTimer();
       }, FADE_MS);
     };
     pre.onerror = ()=>{ nextMedia(true); };
-  } else if (item.type === "video"){
+  } else if (item.type === "video"){ clearImageTimer();
     hideLoader();
     incoming = createVideoEl();
     incoming.src = item.url;
@@ -344,15 +359,7 @@ async function init(){
   }
 
   await Promise.all([refreshMedia(), refreshSponsorsFromDrive()]);
-
-  // Timer voor foto's (video's sturen zelf 'ended')
-  setInterval(()=>{
-    if(!mediaItems.length) return;
-    const cur = mediaItems[currentIndex];
-    if(cur && cur.type === "image"){
-      nextMedia();
-    }
-  }, DISPLAY_TIME);
+  // Per-image timer is managed in showCurrent() -> startImageTimer()
 
   sponsorTimer = setInterval(refreshSponsorsFromDrive, SPONSOR_REFRESH_INTERVAL);
 
