@@ -53,6 +53,9 @@ function isSmartTV(){
   return /(Web0S|Tizen|NetCast|HbbTV|Android\sTV|AppleTV|Viera|Bravia|TV\sBuild)/i.test(ua);
 }
 const IS_TV = isSmartTV();
+console.log("DEBUG → UA:", navigator.userAgent);
+console.log("DEBUG → IS_TV =", IS_TV, "IS_MOBILE =", IS_MOBILE);
+SPONSOR_ANIMATIE = "smooth-scroll";  // forceer tijdelijk animatie
 // Op echte TV: fallback "static". Anders: altijd smooth.
 if (IS_TV && !/Windows|Macintosh|X11|Linux/i.test(navigator.userAgent)) {
   SPONSOR_ANIMATIE = "static";
