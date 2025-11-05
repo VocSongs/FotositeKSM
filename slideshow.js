@@ -19,30 +19,28 @@ const PHOTO_THUMB_WIDTH       = IS_MOBILE ? 1200 : 2000;
 const SPONSOR_THUMB_WIDTH     = IS_MOBILE ? 600  : 800;
 
 function isFullscreenLike(){
-  // Detecteer F11/werkelijk fullscreen via maatvergelijking of API
-  const dw = window.innerWidth,  dh = window.innerHeight;
+  // Detecteer F11 of werkelijk fullscreen
+  const dw = window.innerWidth, dh = window.innerHeight;
   const sw = screen.availWidth || screen.width;
   const sh = screen.availHeight || screen.height;
-  const near = (a,b)=> Math.abs(a-b) <= 40; // marge voor OS-balken
+  const near = (a,b)=> Math.abs(a-b) <= 40;
   return document.fullscreenElement || (near(dw, sw) && near(dh, sh));
 }
 
 function updateFsHint(){
-  const el   = document.getElementById('fsHint');
+  const el = document.getElementById('fsHint');
   if (!el) return;
-  // toon alleen op desktop + geen smart tv
+  // toon enkel op desktop, geen smart-tv
   const show = !IS_MOBILE && !IS_TV && !isFullscreenLike();
   el.hidden = !show;
 }
 
-function wireFsHintClose(){
-  const btn = document.getElementById('fsHintClose');
-  if (!btn) return;
-  btn.addEventListener('click', ()=>{
-    const el = document.getElementById('fsHint');
-    if (el) el.hidden = true;
-  });
-}
+// Initialisatie in init()
+window.addEventListener('resize', updateFsHint);
+document.addEventListener('fullscreenchange', updateFsHint);
+window.addEventListener('keydown', e => {
+  if (e.key === 'F11') setTimeout(updateFsHint, 800);
+});
 
 // Slideshow
 let mediaItems   = [];  // [{type:'image'|'video', url, id, name}]
@@ -352,20 +350,23 @@ async function refreshMedia(){
   showCurrent();
 }
 
-// ***** INIT *****
 async function init(){
   containerEl   = document.querySelector(".slideshow");
   lastRefreshEl = document.getElementById("lastRefresh");
   noPhotosEl    = document.getElementById("noPhotosMsg");
   sponsorColEl  = document.getElementById("sponsorCol");
   audioBtn      = document.getElementById("audioToggle");
-    wireFsHintClose();
+
+  // Fullscreen-hint setup (géén wireFsHintClose meer nodig)
   updateFsHint();
   window.addEventListener('resize', updateFsHint);
   document.addEventListener('fullscreenchange', updateFsHint);
+  window.addEventListener('keydown', e => {
+    if (e.key === 'F11') setTimeout(updateFsHint, 800);
+  });
 
   // Audio toggle
-  if(audioBtn){
+  if (audioBtn){
     setAudioIcon();
     audioBtn.addEventListener("click", ()=>{
       audioEnabled = !audioEnabled;
@@ -376,13 +377,11 @@ async function init(){
 
   await Promise.all([refreshMedia(), refreshSponsorsFromDrive()]);
 
-  // Timer voor foto's (alleen voor images; video's sturen zelf 'ended')
+  // Timer voor foto's (video's sturen zelf 'ended')
   setInterval(()=>{
     if(!mediaItems.length) return;
     const cur = mediaItems[currentIndex];
-    if(cur && cur.type === "image"){
-      nextMedia();
-    }
+    if(cur && cur.type === "image") nextMedia();
   }, DISPLAY_TIME);
 
   sponsorTimer = setInterval(refreshSponsorsFromDrive, SPONSOR_REFRESH_INTERVAL);
