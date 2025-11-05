@@ -1,13 +1,24 @@
 :root {
-  --sidebar-w: clamp(200px, 25vw, 900px);
+  /* Brede, responsieve sidebar */
+  --sidebar-w: clamp(280px, 25vw, 660px);
+
   --sponsor-gap: 2px;
   --sponsor-pad: 18px;
   --radius: 12px;
-  --footer-font-size: 1.1rem;
+
+  /* Footer schaalt mee met scherm */
+  --footer-font-size: clamp(0.95rem, 1.1vw, 1.4rem);
   --footer-pad-y: 0.7rem;
   --footer-pad-x: 1.2rem;
+
   --slide-shift: 40px;
   --glow-time: 600ms;
+}
+
+/* Basis rem-maat schaalt mee (desktop); mobiel blijft leesbaar */
+html { font-size: clamp(14px, 1.2vw, 20px); }
+@media (max-width: 900px){
+  html { font-size: 16px; }
 }
 
 * { box-sizing: border-box; }
@@ -142,11 +153,11 @@ html, body {
   box-shadow: 0 15px 40px rgba(0,0,0,0.6);
 }
 
-/* Laatste update */
+/* Laatste update (schaalt mee) */
 .lastRefreshUnder {
   position: absolute;
   left: 12px; right: 12px; bottom: 8px;
-  font-size: 0.8rem;
+  font-size: clamp(0.8rem, 0.9vw, 1rem);
   color: #fff;
   text-align: center;
   opacity: .95;
@@ -167,13 +178,19 @@ html, body {
 }
 #loader.fadeOut { opacity: 0; pointer-events: none; }
 .loaderLogo { max-width: 28%; height: auto; opacity: .9; }
-.loaderText { margin-top: 1rem; font-size: 5rem; color: #fff; text-align:center; text-shadow: 0 0 8px rgba(255,255,255,.6); }
+.loaderText {
+  margin-top: 1rem;
+  font-size: clamp(1.2rem, 1.6vw, 2rem); /* groter, responsief */
+  color: #fff;
+  text-align:center;
+  text-shadow: 0 0 8px rgba(255,255,255,.6);
+}
 
 /* Fullscreen start-knop in loader */
 .startFsBtn{
   margin-top: 10px;
   padding: 10px 14px;
-  font-size: 0.95rem;
+  font-size: clamp(0.95rem, 1.1vw, 1.2rem);
   color: #fff;
   background: rgba(255,255,255,0.12);
   border: 1px solid rgba(255,255,255,0.35);
@@ -184,7 +201,7 @@ html, body {
 }
 .startFsBtn:hover{ background: rgba(255,255,255,0.2); }
 
-/* === Audioknop === */
+/* === Audioknop (schaalt mee) === */
 .audioToggle{
   position: fixed;
   top: 12px;
@@ -193,9 +210,9 @@ html, body {
   background: rgba(255,255,255,0.14);
   color: #fff;
   border: 1px solid rgba(255,255,255,0.3);
-  padding: 8px 11px;
+  padding: clamp(6px, 0.6vw, 12px) clamp(8px, 0.9vw, 14px);
   border-radius: 12px;
-  font-size: 18px;
+  font-size: clamp(18px, 1.4vw, 28px);
   line-height: 1;
   cursor: pointer;
   user-select: none;
