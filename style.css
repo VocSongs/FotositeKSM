@@ -7,9 +7,9 @@
   --radius: 12px;
 
   /* Footer schaalt mee met scherm */
-  --footer-font-size: clamp(0.95rem, 1.1vw, 1.4rem);
-  --footer-pad-y: 0.7rem;
-  --footer-pad-x: 1.2rem;
+  --footer-font-size: clamp(0.5rem, 1.3vw, 5rem);
+  --footer-pad-y: 0.8rem;
+  --footer-pad-x: 1rem;
 
   --slide-shift: 40px;
   --glow-time: 600ms;
@@ -27,7 +27,7 @@ html, body {
   margin: 0;
   background: #000;
   color: #fff;
-  font-family: system-ui, Arial, sans-serif;
+  -family: system-ui, Arial, sans-serif;
   overflow: hidden;
 }
 
@@ -145,10 +145,10 @@ html, body {
   display: inline-block;
   background: rgba(0,0,0,0.55);
   padding: var(--footer-pad-y) var(--footer-pad-x);
-  font-size: var(--footer-font-size);
+  -size: var(--footer--size);
   border-radius: 14px;
   color: #fff;
-  font-weight: 600;
+  -weight: 600;
   letter-spacing: .02em;
   box-shadow: 0 15px 40px rgba(0,0,0,0.6);
 }
@@ -157,7 +157,7 @@ html, body {
 .lastRefreshUnder {
   position: absolute;
   left: 12px; right: 12px; bottom: 8px;
-  font-size: clamp(0.8rem, 0.9vw, 1rem);
+  font-size: clamp(0.5rem, 1.2vw, 2rem);
   color: #fff;
   text-align: center;
   opacity: .95;
