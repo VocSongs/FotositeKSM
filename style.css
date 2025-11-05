@@ -3,7 +3,7 @@
   --sidebar-w: clamp(280px, 20vw, 660px);
 
   --sponsor-gap: 2px;
-  --sponsor-pad: 2px;
+  --sponsor-pad: 5px;
   --radius: 12px;
 
   /* Footer schaalt mee met scherm */
