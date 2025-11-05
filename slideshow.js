@@ -331,7 +331,8 @@ async function init(){
 
   // Data laden
   await Promise.all([refreshMedia(), refreshSponsorsFromDrive()]);
-  sponsorTimer = setInterval(refreshSponsorsFromDrive, 5 * 60 * 1000);
+  sponsorTimer = setInterval(refreshSponsorsFromDrive, 60 * 60 * 1000);
+  setInterval(refreshMedia, 15 * 60 * 1000);
 
   // Keep scroll alive
   document.addEventListener('visibilitychange', ()=>{
