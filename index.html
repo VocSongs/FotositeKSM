@@ -1,63 +1,21 @@
-er<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="nl">
 <head>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
   <meta charset="utf-8" />
-  <meta http-equiv="Cache-Control" content="no-store" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>HAPPENING 2026 – KSM Millen</title>
-  <meta name="theme-color" content="#000000" />
-  <meta name="description" content="International Football Happening 2026 – Krom & Stijf Veteranen" />
-  <link rel="stylesheet" href="style.css?v=9" />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css?v=10">
 </head>
 <body>
-  <!-- Sponsor sidebar (desktop) -->
-  <aside id="sponsorSidebar" class="sponsorSidebar" aria-label="Sponsors zijbalk">
-    <img src="26.jpg" alt="Onze sponsors" class="sponsorLogoTop" loading="eager" decoding="async" />
-    <div id="sponsorCol" class="sponsorCol" aria-label="Sponsorlogo's"></div>
-    <div class="lastRefreshUnder" id="lastRefresh" aria-live="polite">Last update: --:--</div>
-  </aside>
-
-  <!-- Slideshow -->
-  <main class="slideshow" aria-label="Media-slideshow" role="main"></main>
-
-  <!-- Audioknop rechtsboven -->
-  <button id="audioToggle" class="audioToggle" aria-label="Geluid aan/uit" title="Geluid aan/uit" data-state="muted">🔇</button>
-
-  <!-- Footer overlay -->
-  <footer class="footerOverlay" aria-label="Footer">
-    <div class="sponsorLine">
-      INTERNATIONAL FOOTBALL HAPPENING 2026 — KROM &amp; STIJF MILLEN — FOOTBALL, BEER AND FRIENDS
-    </div>
-  </footer>
-
-  <!-- Geen media-bericht -->
-  <div class="noPhotosMsg" id="noPhotosMsg" aria-live="polite" hidden>
-    Momenteel geen beelden om te tonen.<br />(Kom straks terug 😉)
-  </div>
-
-  <!-- Loader (boven media) + Fullscreen start -->
-  <div id="loader" aria-live="polite" aria-busy="true">
-    <img src="logoKSM.png" alt="Krom &amp; Stijf Millen" class="loaderLogo" loading="eager" decoding="async" />
-    <div class="loaderText">
-            Deze site kan het best bekeken worden in <b>fullscreen</b>.<br />
-      <button id="startFsBtn" class="startFsBtn" type="button">
-        Klik hier om door te gaan in fullscreen
-      </button>
+  <div class="sponsorSidebar">
+    <img src="logoKSM.png" class="sponsorLogoTop" alt="KSM Millen Logo">
+    <div class="sponsorCol">
+      <div class="sponsorItem" style="background-image:url('26.jpg');"></div>
     </div>
   </div>
-
-  <!-- Mobiel merklogo -->
-  <img src="logoKSM.png" alt="KSM Millen" class="mobileBrandLogo" loading="lazy" decoding="async" />
-
-  <script defer src="slideshow.js?v=9"></script>
-  <script>
-    window.addEventListener('load', () => {
-      if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('./service-worker.js').catch(()=>{});
-      }
-    });
-    document.getElementById('noPhotosMsg')?.removeAttribute('hidden');
-  </script>
+  <div class="slideshow">
+    <p style="text-align:center;">Site test – Poppins actief en sponsorfix toegepast</p>
+  </div>
 </body>
 </html>
