@@ -1,6 +1,6 @@
 :root{
-  --sidebar-w: clamp(100px, 22vw, 800px);
-  --sponsor-gap: 12px;
+  --sidebar-w: clamp(50px, 22vw, 1000px);
+  --sponsor-gap: 8px;
   --radius: 12px;
   --footer-font-size: clamp(0.9rem, 1.0vw, 1.3rem);
   --footer-pad-y: 0.6rem;
