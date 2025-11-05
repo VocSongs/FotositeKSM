@@ -27,7 +27,7 @@ html, body {
   margin: 0;
   background: #000;
   color: #fff;
-  -family: system-ui, Arial, sans-serif;
+  -family: 'Poppins', system-ui, sans-serif;
   overflow: hidden;
 }
 
