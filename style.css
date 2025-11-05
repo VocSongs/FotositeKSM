@@ -149,4 +149,21 @@ html, body {
   .slideshow{ left:0; }
   .slideImage,.slideVideo{ width:100vw; height:100vh; max-width:100vw; }
   .footerOverlay{ left:0; right:0; }
+  #cornerBadge {
+  position: fixed;
+  bottom: 20px;
+  right: 22px;
+  width: 140px;             /* pas aan naar wens */
+  height: auto;
+  z-index: 25;
+  opacity: 0.92;
+  pointer-events: none;     /* zodat je niet per ongeluk klikt */
+  filter: drop-shadow(0 3px 10px rgba(0,0,0,0.6));
+  transition: opacity 0.5s ease;
+}
+
+#cornerBadge:hover {
+  opacity: 1;
+}
+
 }
