@@ -269,26 +269,29 @@ async function init(){
 
   if (sponsorColEl){ sponsorColEl.style.overflow = "hidden"; }
 
-  // fullscreen-knop
- const fsBtn = document.getElementById("startFsBtn");
-if (fsBtn) {
-  fsBtn.addEventListener("click", async () => {
-    // probeer fullscreen aan te vragen
-    try {
-      await document.documentElement.requestFullscreen();
-    } catch (e) {
-      console.warn("Fullscreen niet toegestaan:", e);
-    }
+// ---------------------
+// Init
+// ---------------------
 async function requestFullscreenAndHide(){
-  try { await document.documentElement.requestFullscreen(); } catch(e) {
+  try {
+    await document.documentElement.requestFullscreen();
+  } catch(e) {
     console.warn("Fullscreen niet toegestaan:", e);
   }
-  setTimeout(()=>{ hideLoader(); }, 300);
+  // Na kleine vertraging fade loader uit
+  setTimeout(() => { hideLoader(); }, 300);
 }
 
 async function init(){
-  // ... jouw bestaande init ...
+  containerEl   = document.querySelector(".slideshow");
+  lastRefreshEl = document.getElementById("lastRefresh");
+  noPhotosEl    = document.getElementById("noPhotosMsg");
+  sponsorColEl  = document.getElementById("sponsorCol");
+  audioBtn      = document.getElementById("audioToggle");
 
+  if (sponsorColEl){ sponsorColEl.style.overflow = "hidden"; }
+
+  // --- Fullscreenknop + Enter/Space ---
   const fsBtn = document.getElementById("startFsBtn");
   if (fsBtn){
     fsBtn.addEventListener("click", requestFullscreenAndHide);
@@ -306,29 +309,29 @@ async function init(){
     });
   }
 
-  // ... de rest van init ...
-}
-
-    // even wachten tot fullscreen actief is (zekerheid)
-    setTimeout(() => {
-      hideLoader();      // fade het laadscherm weg
-      fsBtn.blur();
-    }, 500);
-  });
-}
-
-
-  // audio
+  // --- Audio ---
   if(audioBtn){
     setAudioIcon();
-    audioBtn.addEventListener("click", ()=>{ audioEnabled=!audioEnabled; setAudioIcon(); applyAudioTo(currentEl); });
+    audioBtn.addEventListener("click", ()=>{
+      audioEnabled = !audioEnabled;
+      setAudioIcon();
+      applyAudioTo(currentEl);
+    });
   }
 
+  // --- Data laden ---
   await Promise.all([refreshMedia(), refreshSponsorsFromDrive()]);
   sponsorTimer = setInterval(refreshSponsorsFromDrive, 5*60*1000);
 
-  // keep-alive
-  document.addEventListener('visibilitychange', ()=>{ if(document.visibilityState==='visible') startAutoScroll(); });
-  setInterval(()=>{ const ok = sponsorColEl && sponsorColEl.querySelector('.sponsorTrack'); if(ok && !__scrollTimer) startAutoScroll(); }, 2000);
+  // --- Keep scroll alive ---
+  document.addEventListener('visibilitychange', ()=>{
+    if (document.visibilityState === 'visible') startAutoScroll();
+  });
+  setInterval(()=>{
+    const ok = sponsorColEl && sponsorColEl.querySelector('.sponsorTrack');
+    if (ok && !__scrollTimer && !__rafId) startAutoScroll();
+  }, 2000);
 }
+
 init();
+
