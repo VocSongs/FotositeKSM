@@ -34,4 +34,219 @@ let canDismissLoader = false;
 
 // Audio vars
 let audioEnabled = false;
-let aud
+let audioBtn;
+
+// Timerbeheer voor foto's
+let imageTimerId = null;
+function clearImageTimer(){ if(imageTimerId){ clearTimeout(imageTimerId); imageTimerId=null; } }
+function startImageTimer(){ clearImageTimer(); imageTimerId=setTimeout(()=>nextMedia(), DISPLAY_TIME); }
+
+// Scroll vars
+const SCROLL_SPEED_PX_PER_SEC = 20;
+let animationFrameId = null;
+let lastScrollTick   = performance.now();
+
+// ***** SMART-TV DETECTIE *****
+function isSmartTV(){
+  const ua = navigator.userAgent || "";
+  return /(Web0S|Tizen|NetCast|HbbTV|Android\sTV|AppleTV|Viera|Bravia|TV\sBuild)/i.test(ua);
+}
+const IS_TV = isSmartTV();
+SPONSOR_ANIMATIE = (IS_TV && /TV|SmartTV|Tizen|webOS/i.test(navigator.userAgent)) ? "static" : "smooth-scroll";
+console.log("DEBUG → IS_TV =", IS_TV, "IS_MOBILE =", IS_MOBILE, "SPONSOR_ANIMATIE =", SPONSOR_ANIMATIE);
+
+// ***** DRIVE HELPERS *****
+async function fetchFolderMediaOrdered(folderId){
+  const q = encodeURIComponent(`'${folderId}' in parents and trashed=false and (mimeType contains 'image/' or mimeType contains 'video/')`);
+  const url = `https://www.googleapis.com/drive/v3/files?q=${q}&orderBy=name&fields=files(id,name,createdTime,mimeType)&pageSize=200&key=${API_KEY}`;
+  const res = await fetch(url);
+  if(!res.ok) return [];
+  const data = await res.json();
+  return (data.files||[]).map(f=>{
+    const isImage=f.mimeType.startsWith("image/");
+    const isVideo=f.mimeType.startsWith("video/");
+    const imageUrl=`https://drive.google.com/thumbnail?id=${f.id}&sz=w${PHOTO_THUMB_WIDTH}`;
+    const videoUrl=`https://www.googleapis.com/drive/v3/files/${f.id}?alt=media&key=${API_KEY}`;
+    return { id:f.id, name:f.name, createdTime:f.createdTime, type:isImage?"image":isVideo?"video":"other", url:isImage?imageUrl:videoUrl };
+  }).filter(it=>it.type!=="other");
+}
+
+async function fetchFolderImages(folderId, isSponsor=false){
+  const q = encodeURIComponent(`'${folderId}' in parents and trashed=false and mimeType contains 'image/'`);
+  const url = `https://www.googleapis.com/drive/v3/files?q=${q}&orderBy=name&fields=files(id,name,createdTime,mimeType)&pageSize=200&key=${API_KEY}`;
+  const res = await fetch(url);
+  if(!res.ok) return [];
+  const data = await res.json();
+  const width = isSponsor ? SPONSOR_THUMB_WIDTH : PHOTO_THUMB_WIDTH;
+  return (data.files||[]).map(f=>({ id:f.id, name:f.name, createdTime:f.createdTime, url:`https://drive.google.com/thumbnail?id=${f.id}&sz=w${width}` }));
+}
+
+function filterRecentLivePhotos(files){
+  const now=Date.now(), maxAge=LIVE_MAX_AGE_HOURS*3600000;
+  return files.filter(f=> now - new Date(f.createdTime).getTime() <= maxAge );
+}
+
+// ***** UI HELPERS *****
+function hideLoader(){
+  if(!canDismissLoader || loaderHidden) return;
+  const loader=document.getElementById("loader");
+  if(loader) loader.classList.add("fadeOut");
+  loaderHidden=true;
+}
+
+function createImgEl(){ const el=document.createElement("img"); el.className="slideImage"; el.style.opacity="0"; return el; }
+function createVideoEl(){
+  const el=document.createElement("video");
+  el.className="slideVideo";
+  el.playsInline=true;
+  el.setAttribute("playsinline","");
+  el.setAttribute("webkit-playsinline","");
+  el.autoplay=true;
+  el.loop=false;
+  el.controls=false;
+  el.muted=!audioEnabled;
+  el.preload="auto";
+  el.crossOrigin="anonymous";
+  el.style.opacity="0";
+  return el;
+}
+
+function setAudioIcon(){
+  if(!audioBtn) return;
+  audioBtn.textContent = audioEnabled ? "🔊" : "🔇";
+  audioBtn.dataset.state = audioEnabled ? "unmuted" : "muted";
+}
+function applyAudioTo(el){
+  if(!el || el.tagName!=="VIDEO") return;
+  el.muted = !audioEnabled;
+  if(audioEnabled) el.play().catch(()=>{});
+}
+
+// ***** SLIDESHOW *****
+function showCurrent(){
+  clearImageTimer();
+  if(!mediaItems.length){ if(currentEl) currentEl.remove(); if(noPhotosEl) noPhotosEl.hidden=false; return; }
+  if(noPhotosEl) noPhotosEl.hidden=true;
+
+  const item = mediaItems[currentIndex];
+  let incoming;
+
+  if(item.type==="image"){
+    const pre=new Image(); pre.src=item.url;
+    pre.onload=()=>{
+      hideLoader();
+      incoming=createImgEl(); incoming.src=pre.src;
+      if(FOTO_ANIMATIE==="kenburns"){ incoming.style.setProperty("--kb-duration",Math.max(DISPLAY_TIME,6000)+"ms"); incoming.classList.add("kenburns"); }
+      containerEl.appendChild(incoming);
+      requestAnimationFrame(()=>{ incoming.style.opacity="1"; if(currentEl) currentEl.style.opacity="0"; });
+      setTimeout(()=>{ if(currentEl) currentEl.remove(); currentEl=incoming; startImageTimer(); },FADE_MS);
+    };
+    pre.onerror=()=>nextMedia(true);
+  } else if(item.type==="video"){
+    clearImageTimer(); hideLoader();
+    incoming=createVideoEl(); incoming.src=item.url; applyAudioTo(incoming);
+    incoming.addEventListener("ended",()=>nextMedia());
+    containerEl.appendChild(incoming);
+    requestAnimationFrame(()=>{ incoming.style.opacity="1"; if(currentEl) currentEl.style.opacity="0"; });
+    setTimeout(()=>{ if(currentEl) currentEl.remove(); currentEl=incoming; },FADE_MS);
+  }
+}
+function nextMedia(){ if(!mediaItems.length)return; currentIndex=(currentIndex+1)%mediaItems.length; showCurrent(); }
+
+// ***** SPONSORS *****
+let sponsorImages=[];
+function createSponsorTile(url){ const d=document.createElement("div"); d.className="sponsorItem"; if(url) d.style.backgroundImage=`url("${url}")`; return d; }
+
+async function refreshSponsorsFromDrive(){
+  const files = await fetchFolderImages(SPONSOR_FOLDER_ID,true);
+  if(files.length) sponsorImages = files;
+  renderSponsorColumn();
+}
+
+function startSmoothScroll(){
+  if(animationFrameId) cancelAnimationFrame(animationFrameId);
+  const track = sponsorColEl?.querySelector(".sponsorTrack");
+  if(!track) return;
+  let loopH = 0; const measure=()=>loopH=track.scrollHeight/2; measure(); requestAnimationFrame(measure);
+  let last=performance.now();
+  function step(ts){
+    const dt=(ts-last)/1000; last=ts;
+    sponsorColEl.scrollTop += SCROLL_SPEED_PX_PER_SEC * dt;
+    if(!loopH) loopH=track.scrollHeight/2;
+    if(loopH && sponsorColEl.scrollTop>=loopH) sponsorColEl.scrollTop-=loopH;
+    lastScrollTick=ts; animationFrameId=requestAnimationFrame(step);
+  }
+  animationFrameId=requestAnimationFrame(step);
+}
+
+function renderSponsorColumn(){
+  if(!sponsorColEl) return;
+  sponsorColEl.innerHTML="";
+  if(SPONSOR_ANIMATIE==="smooth-scroll"){
+    const track=document.createElement("div");
+    track.className="sponsorTrack";
+    track.style.display="flex";
+    track.style.flexDirection="column";
+    track.style.gap="12px";
+    sponsorColEl.appendChild(track);
+    const list=sponsorImages.length?sponsorImages:[];
+    if(list.length){
+      const frag=document.createDocumentFragment();
+      list.forEach(f=>frag.appendChild(createSponsorTile(f.url)));
+      track.appendChild(frag.cloneNode(true));
+      track.appendChild(frag.cloneNode(true));
+    }
+    startSmoothScroll(); return;
+  }
+  // fallback
+  const list=sponsorImages.length?sponsorImages:[]; 
+  const take=Math.max(NUM_SPONSORS_VISIBLE,list.length);
+  for(let i=0;i<take;i++){ const f=list[i%(list.length||1)]; sponsorColEl.appendChild(createSponsorTile(f.url)); }
+}
+
+// ***** REFRESH MEDIA *****
+async function refreshMedia(){
+  const topMedia=await fetchFolderMediaOrdered(TOP_FOLDER_ID);
+  mediaItems = topMedia.length ? topMedia : filterRecentLivePhotos(await fetchFolderImages(LIVE_FOLDER_ID,false)).map(x=>({type:'image',url:x.url,id:x.id,name:x.name}));
+  if(currentIndex>=mediaItems.length) currentIndex=0;
+  const now=new Date();
+  if(lastRefreshEl) lastRefreshEl.textContent="Last update: "+ now.toLocaleTimeString("nl-BE",{hour:"2-digit",minute:"2-digit"});
+  showCurrent();
+}
+
+// ***** INIT *****
+async function init(){
+  containerEl=document.querySelector(".slideshow");
+  lastRefreshEl=document.getElementById("lastRefresh");
+  noPhotosEl=document.getElementById("noPhotosMsg");
+  sponsorColEl=document.getElementById("sponsorCol");   // ✅ fix
+  if(sponsorColEl){
+    sponsorColEl.style.overflowY='auto';
+    sponsorColEl.style.scrollBehavior='auto';
+    sponsorColEl.classList.add('noScrollbars');
+    const style=document.createElement('style');
+    style.textContent=`.noScrollbars{scrollbar-width:none;-ms-overflow-style:none}.noScrollbars::-webkit-scrollbar{display:none}`;
+    document.head.appendChild(style);
+  }
+  audioBtn=document.getElementById("audioToggle");
+
+  // Fullscreen via loader
+  const fsBtn=document.getElementById('startFsBtn');
+  if(fsBtn){
+    fsBtn.addEventListener('click',async()=>{ try{await document.documentElement.requestFullscreen();}catch(e){} canDismissLoader=true; hideLoader(); fsBtn.blur(); });
+  }
+
+  if(audioBtn){
+    setAudioIcon();
+    audioBtn.addEventListener("click",()=>{ audioEnabled=!audioEnabled; setAudioIcon(); applyAudioTo(currentEl); });
+  }
+
+  await Promise.all([refreshMedia(),refreshSponsorsFromDrive()]);
+  sponsorTimer=setInterval(refreshSponsorsFromDrive,SPONSOR_REFRESH_INTERVAL);
+
+  if(SPONSOR_ANIMATIE==='smooth-scroll'){
+    document.addEventListener('visibilitychange',()=>{ if(document.visibilityState==='visible') startSmoothScroll(); });
+    setInterval(()=>{ const hasTrack=sponsorColEl?.querySelector('.sponsorTrack'); const tooLong=(performance.now()-lastScrollTick)>3000; if(!animationFrameId||!hasTrack||tooLong) startSmoothScroll(); },2000);
+  }
+}
+init();
