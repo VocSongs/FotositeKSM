@@ -8,7 +8,14 @@
 }
 
 *{ box-sizing:border-box; }
-html,body{ height:100%; margin:0; background:#000; color:#fff; font-family:system-ui, Arial, sans-serif; overflow:hidden; }
+html, body {
+  height: 100%;
+  margin: 0;
+  background: #000;
+  color: #fff;
+  font-family: "Poppins", system-ui, Arial, sans-serif; /* ← Poppins */
+  overflow: hidden;
+}
 
 /* Sidebar */
 .sponsorSidebar{
@@ -18,6 +25,22 @@ html,body{ height:100%; margin:0; background:#000; color:#fff; font-family:syste
   backdrop-filter: blur(2px);
   z-index:10;
 }
+.sponsorSidebar::after{
+  content:"";
+  position:absolute;
+  top:0;
+  right:0;
+  width:9px;
+  height:100%;
+  /* 3 strepen: rood (3px) – geel (3px) – rood (3px) */
+  background: linear-gradient(
+    to right,
+    #c00000 0 3px,
+    #ffd700 3px 6px,
+    #c00000 6px 9px
+  );
+  pointer-events:none;
+}
 .sponsorLogoTop{
   width:100%; aspect-ratio: 1.4 / 1; object-fit:contain; background:#000; border-radius:var(--radius);
   box-shadow: 0 6px 16px rgba(0,0,0,.35);
@@ -26,6 +49,42 @@ html,body{ height:100%; margin:0; background:#000; color:#fff; font-family:syste
   flex:1; position:relative; overflow:hidden; /* transform-scroll verbergt buitenbeeld */
   border-radius:var(--radius);
 }
+/* Fades boven/onder over de sponsorlijst */
+.sponsorCol{
+  position: relative; /* belangrijk voor de overlays */
+  overflow: hidden;
+}
+/* "Last update" onderaan de sponsorbalk */
+.lastRefreshSide{
+  margin-top: 8px;
+  text-align: center;
+  font-size: 0.9rem;          /* pas aan naar smaak */
+  opacity: 0.95;
+  color: #fff;
+  text-shadow: 0 0 6px rgba(0,0,0,.8);
+}
+
+.sponsorCol::before,
+.sponsorCol::after{
+  content:"";
+  position:absolute;
+  left:0; right:0;
+  height:36px;               /* pas aan naar smaak (20–48px) */
+  pointer-events:none;
+  z-index:2;
+}
+
+.sponsorCol::before{
+  top:0;
+  /* zwart → transparant, zodat items 'infaden' */
+  background: linear-gradient(to bottom, rgba(0,0,0,0.9), rgba(0,0,0,0));
+}
+.sponsorCol::after{
+  bottom:0;
+  /* transparant → zwart, zodat items 'uitfaden' */
+  background: linear-gradient(to top, rgba(0,0,0,0.9), rgba(0,0,0,0));
+}
+
 .sponsorItem{
   width:100%; aspect-ratio: 1.4 / 1;
   background: #000 center/contain no-repeat;
