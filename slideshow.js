@@ -5,8 +5,8 @@ const TOP_FOLDER_ID     = "1N8wfqj7BFtx-jAYj0qM8-uqJVbblWXw3";
 const SPONSOR_FOLDER_ID = "18RJ4L_e30JlxDUcG945kWpcafy28KFIO";
 
 // ***** ANIMATIEKEUZES *****
-const FOTO_ANIMATIE    = "kenburns";
-let   SPONSOR_ANIMATIE = "smooth-scroll";
+const FOTO_ANIMATIE    = "kenburns";        // "fade" | "kenburns"
+let   SPONSOR_ANIMATIE = "smooth-scroll";   // "smooth-scroll" | "static"
 
 // ***** GLOBALE INSTELLINGEN *****
 const IS_MOBILE               = window.matchMedia("(max-width: 900px)").matches;
@@ -17,7 +17,6 @@ const NUM_SPONSORS_VISIBLE    = 4;
 const SPONSOR_REFRESH_INTERVAL= 5 * 60 * 1000;
 const PHOTO_THUMB_WIDTH       = IS_MOBILE ? 1200 : 2000;
 const SPONSOR_THUMB_WIDTH     = IS_MOBILE ? 600  : 800;
-let canDismissLoader = false;
 
 // Slideshow
 let mediaItems   = [];
@@ -26,13 +25,14 @@ let currentEl    = null;
 let containerEl, lastRefreshEl, noPhotosEl, sponsorColEl;
 let sponsorTimer;
 let loaderHidden = false;
+let canDismissLoader = false;
 
 // Audio
 let audioEnabled = false; // start muted
 let audioBtn;
 
 // Smooth scroll vars
-const SCROLL_SPEED_PX_PER_SEC = 15;
+const SCROLL_SPEED_PX_PER_SEC = 20;
 const SCROLL_EASE_FACTOR      = 0.08;
 let animationFrameId = null;
 let lastScrollTick   = performance.now();
@@ -96,12 +96,13 @@ function filterRecentLivePhotos(files){
 
 // ***** UI HELPERS *****
 function hideLoader(){
-  if (!canDismissLoader) return;          // <-- blokkeer tot klik
+  if (!canDismissLoader) return;
   if (loaderHidden) return;
-  const loader = document.getElementById("loader");
-  if (loader){ loader.classList.add("fadeOut"); }
-  loaderHidden = true;
+  const loader=document.getElementById("loader");
+  if(loader){ loader.classList.add("fadeOut"); }
+  loaderHidden=true;
 }
+
 function createImgEl(){
   const el=document.createElement("img");
   el.className="slideImage";
@@ -149,10 +150,10 @@ function applyAudioTo(el){
 function showCurrent(){
   if (!mediaItems.length){
     if(currentEl){ currentEl.remove(); currentEl=null; }
-    if(noPhotosEl) noPhotosEl.style.opacity=1;
+    if(noPhotosEl) noPhotosEl.hidden = false;
     return;
   }
-  if(noPhotosEl) noPhotosEl.style.opacity=0;
+  if(noPhotosEl) noPhotosEl.hidden = true;
 
   const item = mediaItems[currentIndex];
   let incoming;
@@ -321,16 +322,16 @@ async function init(){
   sponsorColEl  = document.getElementById("sponsorCol");
   audioBtn      = document.getElementById("audioToggle");
 
-// Fullscreen via loader-knop
-const fsBtn = document.getElementById('startFsBtn');
-if (fsBtn){
-  fsBtn.addEventListener('click', async () => {
-    try { await document.documentElement.requestFullscreen(); } catch(e) {}
-    canDismissLoader = true;               // <-- nu mag de loader weg
-    hideLoader();
-    fsBtn.blur();
-  });
-}
+  // Fullscreen via loader-knop
+  const fsBtn = document.getElementById('startFsBtn');
+  if (fsBtn){
+    fsBtn.addEventListener('click', async () => {
+      try { await document.documentElement.requestFullscreen(); } catch(e) {}
+      canDismissLoader = true;   // loader mag nu weg
+      hideLoader();
+      fsBtn.blur();
+    });
+  }
 
   // Audio toggle
   if(audioBtn){

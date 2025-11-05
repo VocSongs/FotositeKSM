@@ -1,19 +1,22 @@
-:root{
-  --sidebar-w: clamp(200px, 25vw, 900px);
-  --sponsor-gap: 2px;
+:root {
+  /* Sidebar breedte responsief en begrensd */
+  --sidebar-w: clamp(280px, 25vw, 660px);
+  --sponsor-gap: 8px;
   --sponsor-pad: 18px;
   --radius: 12px;
-  --footer-font-size: 1.1rem;
+  --footer-font-size: clamp(0.95rem, 1.1vw, 1.4rem);
   --footer-pad-y: 0.7rem;
   --footer-pad-x: 1.2rem;
   --slide-shift: 40px;
   --glow-time: 600ms;
-  --stripe-w: 9px;
+  --stripe-w: 9px; /* breedte van de rood/geel/rood lijn */
 }
 
+/* Stabiele, browser-onafhankelijke tekstschaal */
 html { font-size: clamp(14px, 0.9rem + 0.6vw, 20px); }
 @media (max-width: 900px){ html { font-size: 16px; } }
 
+* { box-sizing: border-box; }
 html, body {
   height: 100%;
   margin: 0;
@@ -30,16 +33,16 @@ html, body {
   width: var(--sidebar-w);
   height: 100vh;
   padding: var(--sponsor-pad);
-  padding-right: calc(var(--sponsor-pad) + var(--stripe-w) + 4px);
+  padding-right: calc(var(--sponsor-pad) + var(--stripe-w) + 4px); /* ruimte voor strepen */
   display: flex;
   flex-direction: column;
   gap: var(--sponsor-gap);
   background: #000;
-  backdrop-filter: blur(2px);
   z-index: 10;
   overflow: hidden;
   position: relative;
 }
+/* Rood/geel/rood scheidingslijn rechts */
 .sponsorSidebar::after{
   content: "";
   position: absolute;
@@ -56,7 +59,7 @@ html, body {
 .sponsorLogoTop{
   width: 100%;
   aspect-ratio: 1.4 / 1;
-  border-radius: 0;
+  border-radius: 0; /* geen afronding bovenaan */
   object-fit: contain;
   background: #000;
   display: block;
@@ -72,6 +75,8 @@ html, body {
   gap: var(--sponsor-gap);
   overflow: hidden;
   position: relative;
+  -webkit-mask-image: linear-gradient(to bottom, rgba(0,0,0,0) 0, rgba(0,0,0,1) 40px, rgba(0,0,0,1) calc(100% - 30px), rgba(0,0,0,0) 100%);
+  mask-image: linear-gradient(to bottom, rgba(0,0,0,0) 0, rgba(0,0,0,1) 40px, rgba(0,0,0,1) calc(100% - 30px), rgba(0,0,0,0) 100%);
 }
 
 .sponsorItem{
@@ -83,9 +88,10 @@ html, body {
   background-repeat: no-repeat;
   background-position: center center;
   background-size: contain;
-  background-color: transparent;
+  background-color: #000;
 }
 
+/* === SLIDESHOW === */
 .slideshow{
   position: fixed;
   top: 0;
@@ -98,3 +104,144 @@ html, body {
   background: #000;
   overflow: hidden;
 }
+
+.slideImage, .slideVideo{
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  width: auto;
+  height: 100vh;
+  max-width: calc(100vw - var(--sidebar-w));
+  object-fit: contain;
+  border-radius: var(--radius);
+  box-shadow: 0 20px 60px rgba(0,0,0,0.8);
+  opacity: 0;
+  transition: opacity 1s ease;
+  background: #000;
+}
+.slideVideo{ background: #000; }
+
+.slideImage.kenburns{
+  will-change: transform;
+  animation: kenburns var(--kb-duration, 8000ms) linear forwards;
+}
+@keyframes kenburns{
+  0%   { transform: scale(1.03) translate(-12px, -8px); }
+  100% { transform: scale(1.09) translate(12px, 8px); }
+}
+
+/* === FOOTER === */
+.footerOverlay{
+  position: fixed;
+  bottom: 1rem;
+  left: var(--sidebar-w);
+  right: 0;
+  text-align: center;
+  z-index: 5;
+}
+.sponsorLine{
+  display: inline-block;
+  background: rgba(0,0,0,0.55);
+  padding: var(--footer-pad-y) var(--footer-pad-x);
+  font-size: var(--footer-font-size);
+  border-radius: 14px;
+  color: #fff;
+  font-weight: 600;
+  letter-spacing: .02em;
+  box-shadow: 0 15px 40px rgba(0,0,0,0.6);
+}
+
+/* Laatste update (schaalt mee) */
+.lastRefreshUnder{
+  position: absolute;
+  left: 12px; right: 12px; bottom: 8px;
+  font-size: clamp(0.8rem, 0.9vw, 1rem);
+  color: #fff;
+  text-align: center;
+  opacity: .95;
+  text-shadow: 0 0 6px rgba(0,0,0,.8);
+}
+
+/* === LOADER === */
+#loader{
+  position: fixed;
+  top: 0; left: var(--sidebar-w); right: 0; bottom: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: #000;
+  z-index: 9999;
+  transition: opacity .8s ease;
+}
+#loader.fadeOut{ opacity: 0; pointer-events: none; }
+.loaderLogo{ max-width: 28%; height: auto; opacity: .9; }
+.loaderText{
+  margin-top: 1rem;
+  font-size: clamp(1.2rem, 1.6vw, 2rem);
+  color: #fff;
+  text-align: center;
+  text-shadow: 0 0 8px rgba(255,255,255,.6);
+}
+
+/* Fullscreen start-knop in loader */
+.startFsBtn{
+  margin-top: 10px;
+  padding: 10px 14px;
+  font-size: clamp(0.95rem, 1.1vw, 1.2rem);
+  color: #fff;
+  background: rgba(255,255,255,0.12);
+  border: 1px solid rgba(255,255,255,0.35);
+  border-radius: 10px;
+  cursor: pointer;
+  backdrop-filter: blur(3px);
+  box-shadow: 0 6px 18px rgba(0,0,0,.35);
+}
+.startFsBtn:hover{ background: rgba(255,255,255,0.2); }
+
+/* === Audioknop (schaalt mee) === */
+.audioToggle{
+  position: fixed;
+  top: 12px;
+  right: 12px;
+  z-index: 20;
+  background: rgba(255,255,255,0.14);
+  color: #fff;
+  border: 1px solid rgba(255,255,255,0.3);
+  padding: clamp(6px, 0.6vw, 12px) clamp(8px, 0.9vw, 14px);
+  border-radius: 12px;
+  font-size: clamp(18px, 1.4vw, 28px);
+  line-height: 1;
+  cursor: pointer;
+  user-select: none;
+  box-shadow: 0 6px 18px rgba(0,0,0,.35);
+  backdrop-filter: blur(3px);
+}
+.audioToggle:hover{ background: rgba(255,255,255,0.22); }
+.audioToggle[data-state="muted"]{ opacity: 0.9; }
+.audioToggle[data-state="unmuted"]{ opacity: 1; }
+
+/* === MOBIEL === */
+@media (max-width: 900px){
+  :root { --sidebar-w: 0; }
+  .sponsorSidebar { display:none !important; }
+  .slideshow { left:0; right:0; top:0; bottom:0; }
+  .slideImage, .slideVideo { width:100vw; height:100vh; }
+  .footerOverlay { left:0; right:0; bottom:12px; }
+  .sponsorLine { font-size:0.75rem !important; }
+
+  .mobileBrandLogo{
+    display:block !important;
+    position:fixed;
+    top:10px;
+    left:50%;
+    transform:translateX(-50%);
+    width:min(28vw,160px);
+    height:auto;
+    z-index:6;
+    opacity:.95;
+    pointer-events:none;
+    filter:drop-shadow(0 6px 18px rgba(0,0,0,.6));
+  }
+}
+.mobileBrandLogo{ display:none !important; }
