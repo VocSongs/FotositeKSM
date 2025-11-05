@@ -84,28 +84,51 @@ function showCurrent(){
   clearImageTimer();
   if(!mediaItems.length){ if(currentEl) currentEl.remove(); return; }
 
-  const it=mediaItems[currentIndex]; let incoming;
-  if(it.type==="image"){
-    const pre=new Image(); pre.src=it.url;
-    pre.onload=()=>{
-      hideLoader();
-      incoming=createImgEl(); incoming.src=pre.src;
-      if(FOTO_ANIMATIE==="kenburns"){ incoming.classList.add("kenburns"); incoming.style.setProperty("--kb-duration", Math.max(DISPLAY_TIME,6000)+"ms"); }
+  const it = mediaItems[currentIndex];
+  let incoming;
+
+  if (it.type === "image"){
+    const pre = new Image(); pre.src = it.url;
+    pre.onload = () => {
+      // hideLoader();  // ← NIET meer automatisch; blijft staan tot op de fullscreen-knop geklikt wordt
+      incoming = createImgEl();
+      incoming.src = pre.src;
+      if (FOTO_ANIMATIE === "kenburns"){
+        incoming.classList.add("kenburns");
+        incoming.style.setProperty("--kb-duration", Math.max(DISPLAY_TIME, 6000) + "ms");
+      }
       containerEl.appendChild(incoming);
-      requestAnimationFrame(()=>{ incoming.style.opacity="1"; if(currentEl) currentEl.style.opacity="0"; });
-      setTimeout(()=>{ if(currentEl) currentEl.remove(); currentEl=incoming; startImageTimer(); }, FADE_MS);
+      requestAnimationFrame(() => {
+        incoming.style.opacity = "1";
+        if (currentEl) currentEl.style.opacity = "0";
+      });
+      setTimeout(() => {
+        if (currentEl) currentEl.remove();
+        currentEl = incoming;
+        startImageTimer();
+      }, FADE_MS);
     };
-    pre.onerror=()=>nextMedia(true);
-  }else{
-    hideLoader();
-    incoming=createVideoEl(); incoming.src=it.url; applyAudioTo(incoming);
-    incoming.addEventListener("ended",()=>nextMedia());
-    incoming.addEventListener("error",()=>nextMedia(true));
+    pre.onerror = () => nextMedia(true);
+
+  } else { // video
+    // hideLoader();  // ← NIET meer automatisch
+    incoming = createVideoEl();
+    incoming.src = it.url;
+    applyAudioTo(incoming);
+    incoming.addEventListener("ended", () => nextMedia());
+    incoming.addEventListener("error", () => nextMedia(true));
     containerEl.appendChild(incoming);
-    requestAnimationFrame(()=>{ incoming.style.opacity="1"; if(currentEl) currentEl.style.opacity="0"; });
-    setTimeout(()=>{ if(currentEl) currentEl.remove(); currentEl=incoming; }, FADE_MS);
+    requestAnimationFrame(() => {
+      incoming.style.opacity = "1";
+      if (currentEl) currentEl.style.opacity = "0";
+    });
+    setTimeout(() => {
+      if (currentEl) currentEl.remove();
+      currentEl = incoming;
+    }, FADE_MS);
   }
 }
+
 function nextMedia(){ if(!mediaItems.length) return; currentIndex=(currentIndex+1)%mediaItems.length; showCurrent(); }
 
 // ---------------------
