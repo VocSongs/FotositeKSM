@@ -136,24 +136,79 @@ function nextMedia(){ if(!mediaItems.length) return; currentIndex=(currentIndex+
 // ---------------------
 function createSponsorTile(url){ const d=document.createElement("div"); d.className="sponsorItem"; d.style.backgroundImage=`url("${url}")`; return d; }
 
+// ===== SUPER-SMOOTH SPONSORSCROLL (rAF + fallback) =====
+let __scrollTimer = null;     // interval fallback
+let __rafId = null;           // rAF id
+let __trackEl = null;
+let __loopH = 0;
+let __offset = 0;
+
 function startAutoScroll(){
-  if(__scrollTimer){ clearInterval(__scrollTimer); __scrollTimer=null; }
-  const track = sponsorColEl?.querySelector(".sponsorTrack"); if(!track) return;
+  // stop vorige motor
+  if (__scrollTimer){ clearInterval(__scrollTimer); __scrollTimer = null; }
+  if (__rafId){ cancelAnimationFrame(__rafId); __rafId = null; }
 
-  __trackEl = track; __loopH = track.scrollHeight/2 || 0; __offset = 0;
+  const track = sponsorColEl?.querySelector(".sponsorTrack");
+  if (!track) return;
 
-  track.style.willChange = 'transform'; track.style.transform = 'translateZ(0)';
+  __trackEl = track;
+  __loopH   = track.scrollHeight / 2 || 0;
+  __offset  = 0;
+
+  // GPU hint & geen scrollbars
+  track.style.willChange = 'transform';
+  track.style.transform  = 'translateZ(0)';
   sponsorColEl.style.overflow = 'hidden';
 
-  const STEP = 16; // ms
+  const SPEED = SCROLL_SPEED_PX_PER_SEC; // px/s
+  let lastTs  = performance.now();
+  let stagnantForMs = 0;
+  const STALL_LIMIT = 600; // ms
+
+  function step(ts){
+    const dt = (ts - lastTs) / 1000;   // sec
+    lastTs = ts;
+
+    if (!__loopH) __loopH = __trackEl.scrollHeight / 2 || 0;
+
+    // lineaire, tijd-gebaseerde beweging (super smooth)
+    __offset += SPEED * dt;
+
+    // naadloze loop
+    if (__loopH && __offset >= __loopH) __offset -= __loopH;
+
+    const prevTransform = __trackEl.style.transform;
+    const nextTransform = `translate3d(0, -${__offset}px, 0)`;
+    __trackEl.style.transform = nextTransform;
+
+    // detecteer stagnatie (bv. tab in background op sommige devices)
+    stagnantForMs = (prevTransform === nextTransform) ? (stagnantForMs + (dt*1000)) : 0;
+
+    if (stagnantForMs > STALL_LIMIT){
+      // fallback naar interval motor
+      __rafId = null;
+      startAutoScrollIntervalFallback(SPEED);
+      return;
+    }
+
+    __rafId = requestAnimationFrame(step);
+  }
+
+  __rafId = requestAnimationFrame(step);
+}
+
+function startAutoScrollIntervalFallback(SPEED){
+  if (__scrollTimer){ clearInterval(__scrollTimer); __scrollTimer = null; }
+  const STEP = 16; // ~60fps
   __scrollTimer = setInterval(()=>{
-    if(!__trackEl) return;
-    if(!__loopH) __loopH = __trackEl.scrollHeight/2 || 0;
-    __offset += SCROLL_SPEED_PX_PER_SEC * (STEP/1000);
-    if(__loopH && __offset >= __loopH) __offset -= __loopH;
-    __trackEl.style.transform = `translateY(-${__offset}px)`;
+    if (!__trackEl) return;
+    if (!__loopH) __loopH = __trackEl.scrollHeight / 2 || 0;
+    __offset += SPEED * (STEP/1000);
+    if (__loopH && __offset >= __loopH) __offset -= __loopH;
+    __trackEl.style.transform = `translate3d(0, -${__offset}px, 0)`;
   }, STEP);
 }
+
 
 function renderSponsorColumn(){
   if(!sponsorColEl) return;
@@ -224,6 +279,35 @@ if (fsBtn) {
     } catch (e) {
       console.warn("Fullscreen niet toegestaan:", e);
     }
+async function requestFullscreenAndHide(){
+  try { await document.documentElement.requestFullscreen(); } catch(e) {
+    console.warn("Fullscreen niet toegestaan:", e);
+  }
+  setTimeout(()=>{ hideLoader(); }, 300);
+}
+
+async function init(){
+  // ... jouw bestaande init ...
+
+  const fsBtn = document.getElementById("startFsBtn");
+  if (fsBtn){
+    fsBtn.addEventListener("click", requestFullscreenAndHide);
+
+    // ENTER of SPACE activeert ook
+    window.addEventListener('keydown', (e)=>{
+      const loader = document.getElementById("loader");
+      const visible = loader && !loader.classList.contains('fadeOut');
+      if (!visible) return;
+
+      if (e.key === 'Enter' || e.key === ' '){
+        e.preventDefault();
+        requestFullscreenAndHide();
+      }
+    });
+  }
+
+  // ... de rest van init ...
+}
 
     // even wachten tot fullscreen actief is (zekerheid)
     setTimeout(() => {
