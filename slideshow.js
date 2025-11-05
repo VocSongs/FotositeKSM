@@ -28,7 +28,7 @@ let __scrollTimer = null;
 let __trackEl = null;
 let __loopH = 0;
 let __offset = 0;
-const SCROLL_SPEED_PX_PER_SEC = 20; // pas aan naar smaak
+const SCROLL_SPEED_PX_PER_SEC = 40; // pas aan naar smaak
 
 // ---------------------
 // Helpers
