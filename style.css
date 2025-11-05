@@ -256,3 +256,30 @@ html, body {
   background-origin: border-box;
   box-shadow: 0 6px 16px rgba(0,0,0,.35);
 }
+/* Fullscreen-hint (desktop) */
+.fsHint{
+  position: fixed;
+  top: 6px;
+  left: var(--sidebar-w);
+  right: 8px;
+  z-index: 30;
+  padding: 10px 14px;
+  background: rgba(0,0,0,0.65);
+  color: #fff;
+  font-size: .95rem;
+  border: 1px solid rgba(255,255,255,.25);
+  border-radius: 10px;
+  box-shadow: 0 8px 24px rgba(0,0,0,.45);
+  backdrop-filter: blur(3px);
+}
+.fsHint b{ font-weight: 700; }
+.fsHintClose{
+  position: absolute; top: 6px; right: 8px;
+  background: transparent; color: #fff;
+  border: 0; font-size: 16px; cursor: pointer;
+  opacity: .8;
+}
+.fsHintClose:hover{ opacity: 1; }
+
+/* Verberg hint op mobiel */
+@media (max-width: 900px){ .fsHint{ display:none !important; } }
