@@ -64,7 +64,7 @@ async function fetchFolderMediaOrdered(folderId){
     const isVideo = f.mimeType.startsWith("video/");
     // Voor publieke bestanden op Drive:
     const imageUrl = `https://drive.google.com/thumbnail?id=${f.id}&sz=w${PHOTO_THUMB_WIDTH}`;
-    const videoUrl = `https://drive.google.com/uc?export=download&id=${f.id}`; // werkt voor publieke mp4's
+   const videoUrl = `https://www.googleapis.com/drive/v3/files/${f.id}?alt=media&key=${API_KEY}`; // werkt voor publieke mp4's
     return {
       id: f.id,
       name: f.name,
@@ -106,14 +106,17 @@ function createImgEl(){
   return el;
 }
 function createVideoEl(){
-  const el=document.createElement("video");
-  el.className="slideVideo";
+  const el = document.createElement("video");
+  el.className = "slideVideo";
   el.playsInline = true;
+  el.setAttribute("playsinline", "");
+  el.setAttribute("webkit-playsinline", "");
   el.autoplay   = true;
   el.loop       = false;
   el.controls   = false;
-  el.muted      = !audioEnabled; // starttoestand
+  el.muted      = !audioEnabled; // starttoestand (autoplay-safe)
   el.preload    = "auto";
+  el.crossOrigin = "anonymous";  // belangrijk voor Drive-stream
   el.style.opacity="0";
   return el;
 }
@@ -181,6 +184,8 @@ function showCurrent(){
     incoming.src = item.url;
     // Als audioEnabled, onmiddellijk on-mute
     applyAudioTo(incoming);
+    // Hint het formattype
+    incoming.type = "video/mp4";
 
     incoming.addEventListener("ended", ()=> { nextMedia(); });
     incoming.addEventListener("error", ()=> { nextMedia(true); });
