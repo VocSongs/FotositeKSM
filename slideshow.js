@@ -1,12 +1,12 @@
 // ***** GOOGLE DRIVE INSTELLINGEN *****
 const API_KEY           = "AIzaSyCcCnm--0E_87Jl0_oHpGA6q7h5_ZoOong";
 const LIVE_FOLDER_ID    = "1DPRvYwG-nluiePp3ZRuCFcseze5kAHp4";
-const TOP_FOLDER_ID     = "1N8wfqj7BFtx-jAYj0qM8-uqJVbblWXw3";   // Curatiemappen (geordend op naam)
+const TOP_FOLDER_ID     = "1N8wfqj7BFtx-jAYj0qM8-uqJVbblWXw3";
 const SPONSOR_FOLDER_ID = "18RJ4L_e30JlxDUcG945kWpcafy28KFIO";
 
 // ***** ANIMATIEKEUZES *****
-const FOTO_ANIMATIE    = "kenburns";        // "fade" | "fade-zoom" | "slide" | "kenburns"
-let   SPONSOR_ANIMATIE = "smooth-scroll";   // "slide-up" | "smooth-scroll" | "fade" | "glow"
+const FOTO_ANIMATIE    = "kenburns";
+let   SPONSOR_ANIMATIE = "smooth-scroll";
 
 // ***** GLOBALE INSTELLINGEN *****
 const IS_MOBILE               = window.matchMedia("(max-width: 900px)").matches;
@@ -18,19 +18,12 @@ const SPONSOR_REFRESH_INTERVAL= 5 * 60 * 1000;
 const PHOTO_THUMB_WIDTH       = IS_MOBILE ? 1200 : 2000;
 const SPONSOR_THUMB_WIDTH     = IS_MOBILE ? 600  : 800;
 
-// Initialisatie in init()
-
-
-window.addEventListener('keydown', e => {
-  if (e.key === 'F11') setTimeout(updateFsHint, 800);
-});
-
 // Slideshow
-let mediaItems   = [];  // [{type:'image'|'video', url, id, name}]
+let mediaItems   = [];
 let currentIndex = 0;
 let currentEl    = null;
 let containerEl, lastRefreshEl, noPhotosEl, sponsorColEl;
-let slideTimer, sponsorTimer;
+let sponsorTimer;
 let loaderHidden = false;
 
 // Audio
@@ -53,14 +46,12 @@ function isSmartTV(){
 }
 const IS_TV = isSmartTV();
 if (IS_TV) {
-  // Op TV vaste weergave voor sponsors — betrouwbaarder
   SPONSOR_ANIMATIE = "static";
   console.log("Smart TV gedetecteerd – sponsor-fallback actief.");
 }
 
 // ***** DRIVE HELPERS *****
 async function fetchFolderMediaOrdered(folderId){
-  // Haal *alle* media (image + video) op, geordend op naam (A→Z)
   const q   = encodeURIComponent(`'${folderId}' in parents and trashed=false and (mimeType contains 'image/' or mimeType contains 'video/')`);
   const url = `https://www.googleapis.com/drive/v3/files?q=${q}&orderBy=name&fields=files(id,name,createdTime,mimeType)&pageSize=200&key=${API_KEY}`;
   const res = await fetch(url);
@@ -69,9 +60,8 @@ async function fetchFolderMediaOrdered(folderId){
   return (data.files || []).map(f => {
     const isImage = f.mimeType.startsWith("image/");
     const isVideo = f.mimeType.startsWith("video/");
-    // Voor publieke bestanden op Drive:
     const imageUrl = `https://drive.google.com/thumbnail?id=${f.id}&sz=w${PHOTO_THUMB_WIDTH}`;
-   const videoUrl = `https://www.googleapis.com/drive/v3/files/${f.id}?alt=media&key=${API_KEY}`; // werkt voor publieke mp4's
+    const videoUrl = `https://www.googleapis.com/drive/v3/files/${f.id}?alt=media&key=${API_KEY}`;
     return {
       id: f.id,
       name: f.name,
@@ -113,17 +103,17 @@ function createImgEl(){
   return el;
 }
 function createVideoEl(){
-  const el = document.createElement("video");
-  el.className = "slideVideo";
+  const el=document.createElement("video");
+  el.className="slideVideo";
   el.playsInline = true;
-  el.setAttribute("playsinline", "");
-  el.setAttribute("webkit-playsinline", "");
+  el.setAttribute("playsinline","");
+  el.setAttribute("webkit-playsinline","");
   el.autoplay   = true;
   el.loop       = false;
   el.controls   = false;
-  el.muted      = !audioEnabled; // starttoestand (autoplay-safe)
+  el.muted      = !audioEnabled;
   el.preload    = "auto";
-  el.crossOrigin = "anonymous";  // belangrijk voor Drive-stream
+  el.crossOrigin = "anonymous";
   el.style.opacity="0";
   return el;
 }
@@ -142,7 +132,6 @@ function applyAudioTo(el){
   if(!el) return;
   if (el.tagName === "VIDEO"){
     el.muted = !audioEnabled;
-    // Als audio net aangezet is, herstart of speel verder met geluid
     if (audioEnabled) {
       const p = el.play();
       if (p && typeof p.catch === "function") { p.catch(()=>{}); }
@@ -189,14 +178,12 @@ function showCurrent(){
     hideLoader();
     incoming = createVideoEl();
     incoming.src = item.url;
-    // Als audioEnabled, onmiddellijk on-mute
-    applyAudioTo(incoming);
-    // Hint het formattype
     incoming.type = "video/mp4";
+    applyAudioTo(incoming);
 
     incoming.addEventListener("ended", ()=> { nextMedia(); });
     incoming.addEventListener("error", ()=> { nextMedia(true); });
-    // Als video niet binnen 15s start, skippen
+
     const startTimeout = setTimeout(()=>{
       if(incoming.readyState < 2){ nextMedia(true); }
     }, 15000);
@@ -218,18 +205,13 @@ function showCurrent(){
   }
 }
 
-function nextMedia(skipDelay=false){
+function nextMedia(){
   if(!mediaItems.length) return;
   currentIndex = (currentIndex + 1) % mediaItems.length;
-  if(skipDelay){
-    showCurrent();
-  }else{
-    showCurrent();
-  }
+  showCurrent();
 }
 
 // ***** SPONSORS *****
-
 function createSponsorTile(url){
   const item = document.createElement("div");
   item.className = "sponsorItem";
@@ -239,7 +221,7 @@ function createSponsorTile(url){
 
 async function refreshSponsorsFromDrive(){
   const files = await fetchFolderImages(SPONSOR_FOLDER_ID,true);
-  if(files.length) sponsorImages = files; // geordend op naam
+  if(files.length) sponsorImages = files;
   renderSponsorColumn();
 }
 
@@ -271,7 +253,6 @@ function renderSponsorColumn(){
   if(!sponsorColEl) return;
   sponsorColEl.innerHTML="";
 
-  // Fallback voor Smart TV: statische grid
   if (SPONSOR_ANIMATIE === "static"){
     const list = sponsorImages.length ? sponsorImages : [];
     list.forEach(file => {
@@ -288,9 +269,7 @@ function renderSponsorColumn(){
     track.style.flexDirection="column";
     track.style.gap="24px";
     sponsorColEl.appendChild(track);
-
     const list = sponsorImages.length ? sponsorImages : [];
-    // Dupliceer voor oneindige scroll
     for(let k=0;k<2;k++){
       list.forEach(file=>{
         const item = createSponsorTile(file && file.url ? file.url : null);
@@ -301,7 +280,6 @@ function renderSponsorColumn(){
     return;
   }
 
-  // Fallback voor andere animatiestanden: toon een paar
   const list = sponsorImages.length ? sponsorImages : [];
   const take = Math.max(NUM_SPONSORS_VISIBLE, list.length);
   for(let i=0; i<take; i++){
@@ -313,26 +291,23 @@ function renderSponsorColumn(){
 
 // ***** REFRESH MEDIA *****
 async function refreshMedia(){
-  // Voorkeur: TOP-folder als geordende "curatie"-lijst (incl. video)
   const topMedia  = await fetchFolderMediaOrdered(TOP_FOLDER_ID);
   if (topMedia.length){
     mediaItems = topMedia;
   } else {
-    // fallback op LIVE recente foto's (alleen images, zoals oorspronkelijk)
     const liveImgs = await fetchFolderImages(LIVE_FOLDER_ID,false);
     mediaItems = filterRecentLivePhotos(liveImgs).map(x=>({type:'image', url:x.url, id:x.id, name:x.name}));
   }
-
   if(currentIndex >= mediaItems.length) currentIndex = 0;
 
   const now=new Date();
   if(lastRefreshEl)
-    lastRefreshEl.textContent="Last update: "+
-      now.toLocaleTimeString("nl-BE",{hour:"2-digit",minute:"2-digit"});
+    lastRefreshEl.textContent="Last update: "+ now.toLocaleTimeString("nl-BE",{hour:"2-digit",minute:"2-digit"});
 
   showCurrent();
 }
 
+// ***** INIT *****
 async function init(){
   containerEl   = document.querySelector(".slideshow");
   lastRefreshEl = document.getElementById("lastRefresh");
@@ -340,7 +315,6 @@ async function init(){
   sponsorColEl  = document.getElementById("sponsorCol");
   audioBtn      = document.getElementById("audioToggle");
 
-  
   // Fullscreen via loader-knop
   const fsBtn = document.getElementById('startFsBtn');
   if (fsBtn){
@@ -349,13 +323,9 @@ async function init(){
       fsBtn.blur();
     });
   }
-// Fullscreen-hint setup (géén wireFsHintClose meer nodig)
-  window.addEventListener('keydown', e => {
-    if (e.key === 'F11') setTimeout(updateFsHint, 800);
-  });
 
   // Audio toggle
-  if (audioBtn){
+  if(audioBtn){
     setAudioIcon();
     audioBtn.addEventListener("click", ()=>{
       audioEnabled = !audioEnabled;
@@ -370,12 +340,13 @@ async function init(){
   setInterval(()=>{
     if(!mediaItems.length) return;
     const cur = mediaItems[currentIndex];
-    if(cur && cur.type === "image") nextMedia();
+    if(cur && cur.type === "image"){
+      nextMedia();
+    }
   }, DISPLAY_TIME);
 
   sponsorTimer = setInterval(refreshSponsorsFromDrive, SPONSOR_REFRESH_INTERVAL);
 
-  // Watchdog smooth-scroll
   if (SPONSOR_ANIMATIE === 'smooth-scroll' && !IS_MOBILE){
     document.addEventListener('visibilitychange', () => {
       if (document.visibilityState === 'visible') startSmoothScroll();

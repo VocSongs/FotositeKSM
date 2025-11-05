@@ -7,11 +7,10 @@
   <title>HAPPENING 2026 – KSM Millen</title>
   <meta name="theme-color" content="#000000" />
   <meta name="description" content="International Football Happening 2026 – Krom & Stijf Millen. Live fotoslideshow & video." />
-
-  <link rel="stylesheet" href="style.css?v=8" />
+  <link rel="stylesheet" href="style.css?v=9" />
 </head>
 <body>
-<!-- Sponsor sidebar (desktop) -->
+  <!-- Sponsor sidebar (desktop) -->
   <aside id="sponsorSidebar" class="sponsorSidebar" aria-label="Sponsors zijbalk">
     <img src="26.jpg" alt="Onze sponsors" class="sponsorLogoTop" loading="eager" decoding="async" />
     <div id="sponsorCol" class="sponsorCol" aria-label="Sponsorlogo's"></div>
@@ -22,9 +21,7 @@
   <main class="slideshow" aria-label="Media-slideshow" role="main"></main>
 
   <!-- Audioknop rechtsboven -->
-  <button id="audioToggle" class="audioToggle" aria-label="Geluid aan/uit" title="Geluid aan/uit" data-state="muted">
-    🔇
-  </button>
+  <button id="audioToggle" class="audioToggle" aria-label="Geluid aan/uit" title="Geluid aan/uit" data-state="muted">🔇</button>
 
   <!-- Footer overlay -->
   <footer class="footerOverlay" aria-label="Footer">
@@ -38,16 +35,22 @@
     Momenteel geen beelden om te tonen.<br />(Kom straks terug 😉)
   </div>
 
-  <!-- Loader (boven media) -->
+  <!-- Loader (boven media) + Fullscreen start -->
   <div id="loader" aria-live="polite" aria-busy="true">
     <img src="logoKSM.png" alt="Krom &amp; Stijf Millen" class="loaderLogo" loading="eager" decoding="async" />
-    <div class="loaderText">Even geduld. We laden snel alle beelden in…<br /><br />💡 Deze site kan het best bekeken worden in <b>fullscreen</b>.<br /><button id="startFsBtn" class="startFsBtn" type="button">Klik hier om door te gaan in fullscreen</button></div>
+    <div class="loaderText">
+      Even geduld. We laden snel alle beelden in…<br /><br />
+      💡 Deze site kan het best bekeken worden in <b>fullscreen</b>.<br />
+      <button id="startFsBtn" class="startFsBtn" type="button">
+        Klik hier om door te gaan in fullscreen
+      </button>
+    </div>
   </div>
 
   <!-- Mobiel merklogo -->
   <img src="logoKSM.png" alt="KSM Millen" class="mobileBrandLogo" loading="lazy" decoding="async" />
 
-  <script defer src="slideshow.js?v=8"></script>
+  <script defer src="slideshow.js?v=9"></script>
   <script>
     window.addEventListener('load', () => {
       if ('serviceWorker' in navigator) {
