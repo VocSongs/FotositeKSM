@@ -1,5 +1,5 @@
 :root {
-  --sidebar-w: min(20vw, 520px);
+  --sidebar-w: min(30vw, 920px);
   --sponsor-gap: 2px;
   --sponsor-pad: 18px;
   --radius: 12px;
