@@ -38,7 +38,7 @@ let __loopH       = 0;
 let __offset      = 0;
 
 // Pas deze aan om sneller/trager te scrollen
-const SCROLL_SPEED_PX_PER_SEC = 20; // px/s
+const SCROLL_SPEED_PX_PER_SEC = 50; // px/s
 
 // ===================== Helpers =====================
 function clearImageTimer(){ if (imageTimerId){ clearTimeout(imageTimerId); imageTimerId = null; } }
