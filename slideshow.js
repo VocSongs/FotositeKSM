@@ -360,6 +360,10 @@ async function init(){
   containerEl   = document.querySelector(".slideshow");
   lastRefreshEl = document.getElementById("lastRefresh");
   noPhotosEl    = document.getElementById("noPhotosMsg");
+  noPhotosEl    = document.getElementById("noPhotosMsg");
+sponsorColEl  = document.getElementById("sponsorCol");   // ✅ voeg deze toe vóór de if
+if (sponsorColEl){
+  // programmatic scroll aanzetten ...
   if (sponsorColEl){
   // programmatic scroll aanzetten en smooth uitschakelen
   sponsorColEl.style.overflowY = 'auto';
