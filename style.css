@@ -1,5 +1,5 @@
 :root {
-  --sidebar-w: clamp(280px, 22vw, 660px);
+  --sidebar-w: clamp(200px, 25vw, 900px);
   --sponsor-gap: 2px;
   --sponsor-pad: 18px;
   --radius: 12px;
