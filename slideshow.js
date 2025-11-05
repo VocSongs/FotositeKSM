@@ -165,23 +165,40 @@ function createSponsorTile(url){
   return d;
 }
 
+// ===== transform-gestuurde, naadloze verticale scroll =====
+let __scrollTimer = null;
+let __trackEl = null;
+let __loopH = 0;
+let __offset = 0;
+
 function startAutoScroll(){
-  if (!sponsorColEl) return;
-  const track = sponsorColEl.querySelector('.sponsorTrack');
+  if (__scrollTimer){ clearInterval(__scrollTimer); __scrollTimer = null; }
+  const track = sponsorColEl?.querySelector('.sponsorTrack');
   if (!track) return;
 
-  if (__scrollTimer){ clearInterval(__scrollTimer); __scrollTimer = null; }
+  __trackEl = track;
+  // hoogte van één set (we renderen min. 2 sets)
+  __loopH = track.scrollHeight / 2 || 0;
+  __offset = 0;
 
-  const STEP = 16; // ms (~60fps)
-  let loopH = track.scrollHeight / 2;
+  // performance hints
+  track.style.willChange = 'transform';
+  track.style.transform = 'translateZ(0)';
+
+  // container mag alles verbergen
+  sponsorColEl.style.overflow = 'hidden';
+
+  const SPEED = 20;   // px/s – pas aan naar smaak
+  const STEP  = 16;   // ms ~60fps
 
   __scrollTimer = setInterval(()=>{
-    sponsorColEl.scrollTop += SCROLL_SPEED_PX_PER_SEC * (STEP/1000);
+    if (!__trackEl) return;
+    if (!__loopH) __loopH = __trackEl.scrollHeight / 2 || 0;
 
-    if (!loopH) loopH = track.scrollHeight / 2; // bijladen afbeeldingen
-    if (loopH && sponsorColEl.scrollTop >= loopH){
-      sponsorColEl.scrollTop -= loopH; // naadloos
-    }
+    __offset += SPEED * (STEP/1000);
+    if (__loopH && __offset >= __loopH) __offset -= __loopH;
+
+    __trackEl.style.transform = `translateY(-${__offset}px) translateZ(0)`;
   }, STEP);
 }
 
@@ -199,16 +216,19 @@ function renderSponsorColumn(){
   track.style.gap = "12px";
   sponsorColEl.appendChild(track);
 
-  // 1 set
+  // één set
   list.forEach(f => track.appendChild(createSponsorTile(f.url)));
   // duplicaat voor naadloze loop
   track.appendChild(track.cloneNode(true));
-  // safety: voldoende hoogte
+
+  // safety: zorg dat er ruim genoeg hoogte is
   while (track.scrollHeight < sponsorColEl.clientHeight * 2 && track.children.length < 300){
     track.appendChild(track.cloneNode(true));
   }
 
   startAutoScroll();
+}
+
 }
 
 async function refreshSponsorsFromDrive(){
@@ -242,17 +262,10 @@ async function init(){
   sponsorColEl  = document.getElementById("sponsorCol");
   audioBtn      = document.getElementById("audioToggle");
 
-  // sponsor kolom scrollbaar en scrollbar verbergen
-  if (sponsorColEl){
-    sponsorColEl.style.overflowY = "auto";
-    sponsorColEl.style.scrollBehavior = "auto";
-    sponsorColEl.classList.add("noScrollbars");
-    if (!document.getElementById('hide-scrollbars-style')){
-      const st = document.createElement('style');
-      st.id = 'hide-scrollbars-style';
-      st.textContent = `.noScrollbars{scrollbar-width:none;-ms-overflow-style:none}.noScrollbars::-webkit-scrollbar{display:none}`;
-      document.head.appendChild(st);
-    }
+// sponsor kolom voorbereiden voor transform-scroll
+if (sponsorColEl){
+  sponsorColEl.style.overflow = "hidden"; // niets buiten de kolom tonen
+}
   }
 
   // fullscreen-knop
