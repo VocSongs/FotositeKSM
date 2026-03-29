@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="nl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>International Football Happening</title>
+  <meta name="description" content="International Football Happening 2026 - info en sfeerbeelden van vorige edities." />
+  <meta name="theme-color" content="#000000" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="dns-prefetch" href="https://www.googleapis.com">
+  <link rel="dns-prefetch" href="https://drive.google.com">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+
+  <link rel="preload" href="style.css?v=v2" as="style">
+  <link rel="stylesheet" href="style.css?v=v2">
+  <link rel="preload" href="toplogo.png" as="image" fetchpriority="high">
+  <link rel="preload" href="happening26.png" as="image">
+</head>
+<body>
+  <aside class="sponsorSidebar" aria-label="Sponsors">
+    <img class="sponsorLogoTop" id="brandTop" src="toplogo.png" alt="KSM" fetchpriority="high" decoding="async" />
+    <div id="sponsorCol" class="sponsorCol" aria-label="Sponsorlijst"></div>
+    <div id="lastRefresh" class="lastRefreshSide" aria-live="polite"></div>
+  </aside>
+
+  <main class="slideshow" id="slideshow" aria-label="Sfeerbeelden slideshow"></main>
+
+  <footer class="footerOverlay" aria-label="Footer">
+    <div class="sponsorLine">
+      International Football Happening 2026 — Football, Beer and Friends
+    </div>
+  </footer>
+
+  <button id="audioToggle" class="audioToggle" type="button" aria-label="Geluid togglen" aria-pressed="false">🔇</button>
+
+  <div id="loader" role="dialog" aria-modal="true" aria-labelledby="loaderTitle" aria-describedby="loaderDescription">
+    <img src="loader.png" class="loaderLogo" alt="KSM" fetchpriority="high" decoding="async" />
+    <div class="loaderText">
+      <strong id="loaderTitle">Welkom op de site van onze International Football Happening.</strong><br>
+      <span id="loaderDescription">Je vindt hier info en sfeerbeelden van vorige edities.</span>
+    </div>
+    <button id="startFsBtn" class="startFsBtn" type="button">Klik hier om te starten in fullscreen</button>
+  </div>
+
+  <img src="happening26.png" id="cornerBadge" alt="Happening 2026" loading="eager" decoding="async">
+
+  <noscript>
+    <div class="noscriptNotice">Deze site heeft JavaScript nodig om de slideshow en sponsors te laden.</div>
+  </noscript>
+
+  <script src="media.local.js?v=v2.2"></script>
+  <script src="slideshow.js?v=v2.2" defer></script>
+</body>
+</html>
