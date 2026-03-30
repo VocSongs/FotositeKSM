@@ -34,7 +34,7 @@ button { font: inherit; }
 
 .sponsorSidebar{
   position:fixed; inset:0 auto 0 0; width:var(--sidebar-w);
-  padding:8px 0px; display:flex; flex-direction:column; gap:var(--sponsor-gap);
+  padding:8px 8px; display:flex; flex-direction:column; gap:var(--sponsor-gap);
   background:var(--panel-bg);
   backdrop-filter: blur(2px);
   z-index:10;
