@@ -19,13 +19,3 @@ Ondersteunde bestanden:
 Opmerking:
 - Als de site via file:// geopend wordt, gebruikt ze eerst media.local.js
 - Als de site via localhost of een webserver draait, kan ze ook media.json gebruiken
-
-
-V2.4 aanpassingen:
-- sponsorzijbalk breder gemaakt via --sidebar-w in style.css
-- sponsorlogo's en toplogo automatisch groter doordat de zijbalk breder is
-- afstand tussen sponsors iets vergroot via --sponsor-gap
-- sponsorscroll vertraagd via CONFIG.sponsorScrollSpeed in slideshow.js (pixels per seconde)
-
-
-V2.8: top logo verplaatst naar linksonder in de slideshow zodat sponsors meer verticale ruimte krijgen.

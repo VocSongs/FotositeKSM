@@ -1,6 +1,6 @@
 :root{
-  --sidebar-w: clamp(80px, 22vw, 460px);
-  --sponsor-gap: 16px;
+  --sidebar-w: clamp(50px, 18vw, 1000px);
+  --sponsor-gap: 12px;
   --radius: 12px;
   --footer-font-size: clamp(0.9rem, 1.0vw, 1.3rem);
   --footer-pad-y: 0.6rem;
@@ -35,7 +35,7 @@ html, body {
   width:100%; aspect-ratio: 1.4 / 1; object-fit:contain; background:#000; border-radius:var(--radius);
   box-shadow: 0 4px 8px rgba(0,0,0,.35);
   margin-bottom: 0px;  /* afstand tot eerste sponsorlogo */
-  margin-top: -20px;    /* ↑ verschuif iets hoger */
+  margin-top: -30px;    /* ↑ verschuif iets hoger */
 }
 .sponsorCol{
   flex:1; position:relative; overflow:hidden; border-radius:var(--radius);
@@ -136,6 +136,3 @@ html, body {
   /* optioneel: kleiner hoeklogo op mobiel */
   #cornerBadge{ width:110px; right: 14px; bottom: 16px; }
 }
-
-
-.footer, .last-update, .update { display:none !important; }
