@@ -13,7 +13,7 @@ const CONFIG = {
   displayTime: 5000,
   fadeMs: 1000,
   animation: "kenburns",
-  sponsorScrollSpeed: 50,
+  sponsorScrollSpeed: 30,
   refreshMediaMs: 15 * 60 * 1000,
   refreshSponsorsMs: 60 * 60 * 1000,
   requestTimeoutMs: 15000,
@@ -98,6 +98,19 @@ function preloadImage(src){
   img.src = src;
 }
 
+async function fetchBlobUrl(url){
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), CONFIG.requestTimeoutMs);
+  try {
+    const response = await fetch(url, { signal: controller.signal, cache: "no-store" });
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    const blob = await response.blob();
+    return URL.createObjectURL(blob);
+  } finally {
+    clearTimeout(timeoutId);
+  }
+}
+
 async function fetchJsonWithTimeout(url){
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), CONFIG.requestTimeoutMs);
@@ -138,7 +151,9 @@ function mapDriveFile(file, { sponsor = false } = {}){
     id: file.id,
     name: file.name,
     createdTime: file.createdTime,
+    mimeType: file.mimeType,
     type: isImage ? "image" : (isVideo ? "video" : "other"),
+    posterUrl: isVideo ? `https://drive.google.com/thumbnail?id=${file.id}&sz=w${width}` : null,
     url: isImage
       ? `https://drive.google.com/thumbnail?id=${file.id}&sz=w${width}`
       : `https://www.googleapis.com/drive/v3/files/${file.id}?alt=media&key=${CONFIG.apiKey}`
@@ -246,7 +261,8 @@ function createVideoEl(){
   el.loop = false;
   el.controls = false;
   el.muted = !state.audioEnabled;
-  el.preload = "metadata";
+  el.defaultMuted = !state.audioEnabled;
+  el.preload = "auto";
   el.crossOrigin = "anonymous";
   el.style.opacity = "0";
   return el;
@@ -321,12 +337,63 @@ function showCurrent(){
   }
 
   const incoming = createVideoEl();
-  incoming.src = item.url;
   incoming.setAttribute("aria-label", item.name || "Video");
+  if (item.posterUrl) incoming.poster = item.posterUrl;
+  if (item.mimeType) incoming.type = item.mimeType;
   applyAudioTo(incoming);
-  incoming.addEventListener("ended", () => nextMedia(), { once: true });
-  incoming.addEventListener("error", () => nextMedia(true), { once: true });
-  fadeBetween(incoming);
+
+  let started = false;
+  let blobUrl = null;
+  const cleanupBlobUrl = () => {
+    if (blobUrl) {
+      try { URL.revokeObjectURL(blobUrl); } catch {}
+      blobUrl = null;
+    }
+  };
+  const startVideo = () => {
+    if (started) return;
+    started = true;
+    fadeBetween(incoming);
+    const playPromise = incoming.play();
+    if (playPromise && typeof playPromise.catch === "function") {
+      playPromise.catch(error => {
+        console.warn("Video afspelen mislukt, volgend item wordt geladen.", error);
+        cleanupBlobUrl();
+        nextMedia(true);
+      });
+    }
+  };
+
+  incoming.addEventListener("loadeddata", startVideo, { once: true });
+  incoming.addEventListener("canplay", startVideo, { once: true });
+  incoming.addEventListener("ended", () => {
+    cleanupBlobUrl();
+    nextMedia();
+  }, { once: true });
+  incoming.addEventListener("error", () => {
+    cleanupBlobUrl();
+    nextMedia(true);
+  }, { once: true });
+
+  (async () => {
+    try {
+      blobUrl = await fetchBlobUrl(item.url);
+      incoming.src = blobUrl;
+      incoming.load();
+    } catch (error) {
+      console.warn("Video ophalen als blob mislukt, directe bron wordt geprobeerd.", error);
+      incoming.src = item.url;
+      incoming.load();
+    }
+  })();
+
+  window.setTimeout(() => {
+    if (!started) {
+      console.warn("Video startte niet tijdig, volgend item wordt geladen.");
+      cleanupBlobUrl();
+      nextMedia(true);
+    }
+  }, 9000);
 }
 
 function nextMedia(){
