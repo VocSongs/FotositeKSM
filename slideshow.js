@@ -141,7 +141,7 @@ function mapDriveFile(file, { sponsor = false } = {}){
     type: isImage ? "image" : (isVideo ? "video" : "other"),
     url: isImage
       ? `https://drive.google.com/thumbnail?id=${file.id}&sz=w${width}`
-      : `https://www.googleapis.com/drive/v3/files/${file.id}?alt=media&key=${CONFIG.apiKey}`
+      : `https://drive.google.com/uc?export=download&id=${file.id}`
   };
 }
 
@@ -180,9 +180,7 @@ async function fetchLocalMediaJson(){
 async function getBestLocalMedia(){
   const inlineLocal = getWindowLocalMedia();
   if (inlineLocal.length) return inlineLocal;
-  const jsonLocal = await fetchLocalMediaJson();
-  if (jsonLocal.length) return jsonLocal;
-  return CONFIG.localFallbackMedia.slice();
+  return [];
 }
 
 async function fetchFolderMediaOrdered(folderId){
@@ -245,9 +243,8 @@ function createVideoEl(){
   el.autoplay = true;
   el.loop = false;
   el.controls = false;
-  el.muted = !state.audioEnabled;
-  el.preload = "metadata";
-  el.crossOrigin = "anonymous";
+  el.muted = true;
+  el.preload = "auto";
   el.style.opacity = "0";
   return el;
 }
@@ -323,10 +320,18 @@ function showCurrent(){
   const incoming = createVideoEl();
   incoming.src = item.url;
   incoming.setAttribute("aria-label", item.name || "Video");
-  applyAudioTo(incoming);
+
+  incoming.addEventListener("loadeddata", () => {
+    applyAudioTo(incoming);
+    fadeBetween(incoming);
+    incoming.play().catch(err => console.warn("Video play mislukt:", err));
+  }, { once: true });
+
   incoming.addEventListener("ended", () => nextMedia(), { once: true });
-  incoming.addEventListener("error", () => nextMedia(true), { once: true });
-  fadeBetween(incoming);
+  incoming.addEventListener("error", (err) => {
+    console.warn("Videofout:", item.name, err);
+    nextMedia(true);
+  }, { once: true });
 }
 
 function nextMedia(){
@@ -447,9 +452,9 @@ async function refreshMedia(){
     state.mediaItems = top;
     updateLastRefreshTime();
   } else {
-    const live = await fetchFolderImages(CONFIG.folders.live, false);
+    const live = await fetchFolderMediaOrdered(CONFIG.folders.live);
     if (live.length) {
-      state.mediaItems = live.map(item => ({ ...item, type: "image" }));
+      state.mediaItems = live;
       updateLastRefreshTime();
     } else {
       state.mediaItems = await getBestLocalMedia();
