@@ -11,7 +11,7 @@ const CONFIG = {
     sponsor: "18RJ4L_e30JlxDUcG945kWpcafy28KFIO"
   },
   displayTime: 5000,
-  fadeMs: 1000,
+  fadeMs: 1400,
   animation: "kenburns",
   sponsorScrollSpeed: 50,
   refreshMediaMs: 15 * 60 * 1000,
