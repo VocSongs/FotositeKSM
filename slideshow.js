@@ -11,7 +11,7 @@ const CONFIG = {
     sponsor: "18RJ4L_e30JlxDUcG945kWpcafy28KFIO"
   },
   displayTime: 5000,
-  fadeMs: 1400,
+  fadeMs: 1800,
   animation: "kenburns",
   sponsorScrollSpeed: 50,
   refreshMediaMs: 15 * 60 * 1000,
@@ -64,6 +64,7 @@ function clearTimer(id){ if (id) clearTimeout(id); }
 function clearIntervalSafe(id){ if (id) clearInterval(id); }
 function cancelRaf(id){ if (id) cancelAnimationFrame(id); }
 function safeJsonParse(value){ try { return JSON.parse(value); } catch { return null; } }
+
 function dedupeById(items){
   const seen = new Set();
   return items.filter(item => {
@@ -73,24 +74,29 @@ function dedupeById(items){
     return true;
   });
 }
+
 function setLastRefresh(text){
   if (els.lastRefresh) els.lastRefresh.textContent = text;
 }
+
 function updateLastRefreshTime(){
   const now = new Date();
   setLastRefresh(`Last update: ${now.toLocaleTimeString("nl-BE", { hour: "2-digit", minute: "2-digit" })}`);
 }
+
 function getCache(key){
   const raw = localStorage.getItem(key);
   const parsed = raw ? safeJsonParse(raw) : null;
   if (!parsed || !parsed.expiresAt || Date.now() > parsed.expiresAt) return null;
   return parsed.data;
 }
+
 function setCache(key, data, ttlMs = CONFIG.cacheTtlMs){
   try {
     localStorage.setItem(key, JSON.stringify({ expiresAt: Date.now() + ttlMs, data }));
   } catch {}
 }
+
 function preloadImage(src){
   if (!src) return;
   const img = new Image();
@@ -152,11 +158,19 @@ function normalizeLocalMediaItems(items){
       if (typeof item === "string") {
         const lower = item.toLowerCase();
         const isVideo = /\.(mp4|webm|mov)$/i.test(lower);
-        return { type: isVideo ? "video" : "image", url: item, name: item.split("/").pop() || `Lokaal bestand ${index + 1}` };
+        return {
+          type: isVideo ? "video" : "image",
+          url: item,
+          name: item.split("/").pop() || `Lokaal bestand ${index + 1}`
+        };
       }
       if (!item || !item.url) return null;
       const type = item.type || (/\.(mp4|webm|mov)$/i.test(item.url) ? "video" : "image");
-      return { ...item, type, name: item.name || item.url.split("/").pop() || `Lokaal bestand ${index + 1}` };
+      return {
+        ...item,
+        type,
+        name: item.name || item.url.split("/").pop() || `Lokaal bestand ${index + 1}`
+      };
     })
     .filter(Boolean);
 }
@@ -187,7 +201,11 @@ async function fetchFolderMediaOrdered(folderId){
   const cacheKey = `ksm_media_${folderId}_${derived.photoWidth}`;
   try {
     const files = await fetchDriveFiles({ folderId, imagesOnly: false });
-    const mapped = dedupeById(files.map(file => mapDriveFile(file)).filter(item => item.type !== "other"));
+    const mapped = dedupeById(
+      files
+        .map(file => mapDriveFile(file))
+        .filter(item => item.type !== "other")
+    );
     setCache(cacheKey, mapped);
     return mapped;
   } catch (error) {
@@ -264,15 +282,30 @@ function applyAudioTo(el){
 }
 
 function fadeBetween(incoming){
+  incoming.style.opacity = "0";
+  incoming.style.zIndex = "2";
+
+  if (state.currentEl) {
+    state.currentEl.style.zIndex = "1";
+  }
+
   els.container.appendChild(incoming);
+
+  // Forceer browser om de beginstatus eerst te renderen
+  void incoming.offsetWidth;
+
   requestAnimationFrame(() => {
     incoming.style.opacity = "1";
-    if (state.currentEl) state.currentEl.style.opacity = "0";
+    if (state.currentEl) {
+      state.currentEl.style.opacity = "0";
+    }
   });
+
   window.setTimeout(() => {
     if (state.currentEl) state.currentEl.remove();
     state.currentEl = incoming;
-  }, CONFIG.fadeMs);
+    state.currentEl.style.zIndex = "1";
+  }, CONFIG.fadeMs + 50);
 }
 
 function warmNextMedia(){
@@ -284,6 +317,7 @@ function warmNextMedia(){
 
 function showCurrent(){
   clearImageTimer();
+
   if (!state.mediaItems.length){
     if (state.currentEl) {
       state.currentEl.remove();
@@ -305,12 +339,16 @@ function showCurrent(){
       const incoming = createImgEl();
       incoming.src = preloader.src;
       incoming.alt = item.name || "Sfeerbeeld";
+
       if (CONFIG.animation === "kenburns" && !state.prefersReducedMotion){
         incoming.classList.add("kenburns");
         incoming.style.setProperty("--kb-duration", `${Math.max(CONFIG.displayTime, 6000)}ms`);
       }
+
       fadeBetween(incoming);
-      window.setTimeout(startImageTimer, CONFIG.fadeMs);
+
+      const delayUntilNext = Math.max(400, CONFIG.displayTime - CONFIG.fadeMs);
+      window.setTimeout(startImageTimer, delayUntilNext);
     };
 
     preloader.onerror = () => nextMedia(true);
@@ -541,6 +579,7 @@ function bindUi(){
 
   window.addEventListener("keydown", (event) => {
     const loaderVisible = els.loader && !els.loader.classList.contains("fadeOut");
+
     if (loaderVisible && (event.key === "Enter" || event.key === " ")) {
       event.preventDefault();
       requestFullscreenAndHide();
@@ -551,6 +590,7 @@ function bindUi(){
       event.preventDefault();
       nextMedia();
     }
+
     if (event.key === "ArrowLeft" && state.mediaItems.length) {
       event.preventDefault();
       state.currentIndex = (state.currentIndex - 1 + state.mediaItems.length) % state.mediaItems.length;

@@ -89,7 +89,7 @@ button { font: inherit; }
   opacity:0;
 
   /* 🔥 BELANGRIJKSTE FIX */
-  transition: opacity 1.4s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: opacity 1.8s cubic-bezier(0.4, 0, 0.2, 1);
 
   background:#000;
 }
